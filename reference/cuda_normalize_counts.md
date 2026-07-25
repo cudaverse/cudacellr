@@ -25,7 +25,7 @@ cuda_normalize_counts(counts, scale_factor = 10000, log1p = TRUE)
 
 ## Value
 
-A sparse `Matrix::dgCMatrix`.
+A sparse `Matrix::dgCMatrix` with the input feature and cell names.
 
 ## Examples
 

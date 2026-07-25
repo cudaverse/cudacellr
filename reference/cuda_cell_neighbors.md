@@ -39,7 +39,7 @@ cuda_cell_neighbors(
 
 ## Value
 
-A `cuda_knn` object.
+A `cuda_knn` object retaining cell names from the embedding.
 
 ## Examples
 

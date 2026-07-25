@@ -1,5 +1,13 @@
 # Changelog
 
+## cudacellr 0.1.2
+
+- Feature and cell identifiers now survive normalization, HVG selection,
+  PCA, kNN, and the complete workflow. HVG results retain original
+  feature indices, including when feature names are duplicated.
+- Added a concise [`print()`](https://rdrr.io/r/base/print.html) method
+  for workflow results and strict validation of the `log1p` flag.
+
 ## cudacellr 0.1.1
 
 - [`cuda_cell_neighbors()`](https://cudaverse.github.io/cudacellr/reference/cuda_cell_neighbors.md)

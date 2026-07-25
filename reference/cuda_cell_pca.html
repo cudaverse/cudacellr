@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cudacellr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,12 +69,13 @@
 
 
 <dt id="arg-device">device<a class="anchor" aria-label="anchor" href="#arg-device"></a></dt>
-<dd><p>Device passed to <code><a href="https://rdrr.io/pkg/cudalearnr/man/cuda_pca.html" class="external-link">cudalearnr::cuda_pca()</a></code>.</p></dd>
+<dd><p>Device passed to <code><a href="https://cudaverse.github.io/cudalearnr/reference/cuda_pca.html" class="external-link">cudalearnr::cuda_pca()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>cuda_pca</code> object with an additional <code>features</code> element.</p>
+    <p>A <code>cuda_pca</code> object with an additional <code>features</code> element. Cell
+names label PCA score rows and selected feature names label loadings.</p>
     </div>
 
     <div class="section level2">
@@ -83,17 +84,17 @@
 <span class="r-in"><span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">30</span> <span class="op">*</span> <span class="fl">20</span>, lambda <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, <span class="fl">30</span>, <span class="fl">20</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">cuda_cell_pca</span><span class="op">(</span><span class="va">counts</span>, n_components <span class="op">=</span> <span class="fl">3</span>, n_hvg <span class="op">=</span> <span class="fl">10</span>, device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;cuda_pca components=3 device=cpu&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>               PC1          PC2         PC3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,]  0.02608630  0.512558175  0.19860552</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] -0.36704292  0.393908021  0.27650371</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]  0.40757497 -0.209287751 -0.22659441</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,]  0.01657213 -0.420012007  0.54493624</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] -0.27037240  0.199740313  0.07087489</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] -0.19268604 -0.054987667 -0.67505649</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] -0.34508242 -0.320837803  0.05396706</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,]  0.23051134  0.005367556  0.14126006</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] -0.23326910 -0.457835356  0.16700949</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] -0.60112065 -0.080064874 -0.15594065</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    PC1          PC2         PC3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> feature_6   0.02608630  0.512558175  0.19860552</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> feature_7  -0.36704292  0.393908021  0.27650371</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> feature_13  0.40757497 -0.209287751 -0.22659441</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> feature_12  0.01657213 -0.420012007  0.54493624</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> feature_10 -0.27037240  0.199740313  0.07087489</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> feature_9  -0.19268604 -0.054987667 -0.67505649</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> feature_8  -0.34508242 -0.320837803  0.05396706</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> feature_17  0.23051134  0.005367556  0.14126006</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> feature_21 -0.23326910 -0.457835356  0.16700949</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> feature_20 -0.60112065 -0.080064874 -0.15594065</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">cudacellr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -92,6 +92,13 @@
 <span></span>
 <span><span class="va">fit</span><span class="op">$</span><span class="va">pca</span></span>
 <span><span class="va">fit</span><span class="op">$</span><span class="va">neighbors</span></span></code></pre></div>
+<p>Feature and cell identifiers are preserved throughout the workflow:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">normalized</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">normalized</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">pca</span><span class="op">$</span><span class="va">x</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">neighbors</span><span class="op">$</span><span class="va">index</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>HVG results also include the original feature <code>index</code>, so repeated feature names do not cause PCA to select the wrong matrix row.</p>
 <p>Continue from this result through graph clustering and embedding in the cudaverse <a href="https://github.com/cudaverse/.github/blob/main/WORKFLOW.md" class="external-link">end-to-end workflow</a>.</p>
 <p>Neighbour search is exact but uses bounded distance blocks. At most <code>min(batch_size, cells) * cells</code> distances are held at once instead of a full cell-by-cell matrix. Reduce <code>batch_size</code> when memory is constrained; the selected neighbours are deterministic and do not change with batch size.</p>
 </div>

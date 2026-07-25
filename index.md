@@ -48,6 +48,19 @@ fit$pca
 fit$neighbors
 ```
 
+Feature and cell identifiers are preserved throughout the workflow:
+
+``` r
+
+identical(rownames(fit$normalized), rownames(counts))
+identical(colnames(fit$normalized), colnames(counts))
+identical(rownames(fit$pca$x), colnames(counts))
+identical(rownames(fit$neighbors$index), colnames(counts))
+```
+
+HVG results also include the original feature `index`, so repeated
+feature names do not cause PCA to select the wrong matrix row.
+
 Continue from this result through graph clustering and embedding in the
 cudaverse [end-to-end
 workflow](https://github.com/cudaverse/.github/blob/main/WORKFLOW.md).
