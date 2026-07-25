@@ -28,12 +28,25 @@ test_that("PCA and neighbors compose", {
   pca <- cuda_cell_pca(
     example_counts(), n_components = 3, n_hvg = 10, device = "cpu"
   )
-  neighbours <- cuda_cell_neighbors(pca, k = 4, device = "cpu")
+  neighbours <- cuda_cell_neighbors(
+    pca,
+    k = 4,
+    device = "cpu",
+    batch_size = 2
+  )
+  one_at_a_time <- cuda_cell_neighbors(
+    pca,
+    k = 4,
+    device = "cpu",
+    batch_size = 1
+  )
 
   expect_s3_class(pca, "cuda_pca")
   expect_identical(dim(pca$x), c(20L, 3L))
   expect_length(pca$features, 10)
   expect_identical(dim(neighbours$index), c(20L, 4L))
+  expect_identical(neighbours$index, one_at_a_time$index)
+  expect_equal(neighbours$distance, one_at_a_time$distance)
 })
 
 test_that("workflow returns all analysis stages", {
@@ -42,6 +55,7 @@ test_that("workflow returns all analysis stages", {
     n_hvg = 10,
     n_components = 3,
     k = 4,
+    batch_size = 2,
     device = "cpu"
   )
   expect_s3_class(fit, "cudacell_workflow")

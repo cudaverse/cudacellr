@@ -37,18 +37,32 @@ fit <- cudacell_workflow(
   counts,
   n_hvg = 300,
   n_components = 20,
-  k = 15
+  k = 15,
+  batch_size = 128
 )
 
 fit$pca
 fit$neighbors
 ```
 
+Continue from this result through graph clustering and embedding in the
+cudaverse
+[end-to-end workflow](https://github.com/cudaverse/.github/blob/main/WORKFLOW.md).
+
+Neighbour search is exact but uses bounded distance blocks. At most
+`min(batch_size, cells) * cells` distances are held at once instead of a full
+cell-by-cell matrix. Reduce `batch_size` when memory is constrained; the
+selected neighbours are deterministic and do not change with batch size.
+
 ## Object integration
 
-The 0.1.0 API accepts base, `Matrix`, and `cudasparse` matrices. Native
+The current API accepts base, `Matrix`, and `cudasparse` matrices. Native
 SingleCellExperiment and Seurat adapters are the next integration milestone;
 they are intentionally not hard dependencies of the numerical core.
+
+For installation, device verification, memory advice, and common failures, see
+the cudaverse
+[GPU setup and troubleshooting guide](https://github.com/cudaverse/.github/blob/main/GPU_SETUP.md).
 
 ## License
 

@@ -9,7 +9,8 @@ cudacell_workflow(
   n_hvg = 2000L,
   n_components = 30L,
   k = 15L,
-  device = c("auto", "cuda", "cpu")
+  device = c("auto", "cuda", "cpu"),
+  batch_size = 256L
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ cudacell_workflow(
 \item{k}{Neighbours per cell.}
 
 \item{device}{Computation device.}
+
+\item{batch_size}{Maximum query rows per exact kNN distance block.}
 }
 \value{
 A list containing normalized counts, variable features, PCA, and kNN.

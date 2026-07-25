@@ -8,7 +8,8 @@ cuda_cell_neighbors(
   embedding,
   k = 15L,
   metric = c("euclidean", "cosine"),
-  device = c("auto", "cuda", "cpu")
+  device = c("auto", "cuda", "cpu"),
+  batch_size = 256L
 )
 }
 \arguments{
@@ -19,6 +20,9 @@ cuda_cell_neighbors(
 \item{metric}{Distance metric.}
 
 \item{device}{Computation device.}
+
+\item{batch_size}{Maximum query rows per exact kNN distance block. Smaller
+values reduce peak distance memory.}
 }
 \value{
 A \code{cuda_knn} object.
@@ -27,5 +31,10 @@ A \code{cuda_knn} object.
 Construct a nearest-neighbour representation
 }
 \examples{
-cuda_cell_neighbors(matrix(rnorm(60), 20, 3), k = 5, device = "cpu")
+cuda_cell_neighbors(
+  matrix(rnorm(60), 20, 3),
+  k = 5,
+  batch_size = 4,
+  device = "cpu"
+)
 }

@@ -1,0 +1,17 @@
+url: https://cudaverse.github.io/cudacellr/
+
+template:
+  bootstrap: 5
+
+reference:
+- title: Preprocess counts
+  contents:
+  - cuda_normalize_counts
+  - cuda_hvg
+- title: Reduce dimensions and find neighbours
+  contents:
+  - cuda_cell_pca
+  - cuda_cell_neighbors
+- title: End-to-end workflows
+  contents:
+  - cudacell_workflow

@@ -191,13 +191,21 @@ cuda_cell_pca <- function(counts, n_components = 30L, n_hvg = 2000L,
 #' @param k Number of neighbours.
 #' @param metric Distance metric.
 #' @param device Computation device.
+#' @param batch_size Maximum query rows per exact kNN distance block. Smaller
+#'   values reduce peak distance memory.
 #' @return A `cuda_knn` object.
 #' @export
 #' @examples
-#' cuda_cell_neighbors(matrix(rnorm(60), 20, 3), k = 5, device = "cpu")
+#' cuda_cell_neighbors(
+#'   matrix(rnorm(60), 20, 3),
+#'   k = 5,
+#'   batch_size = 4,
+#'   device = "cpu"
+#' )
 cuda_cell_neighbors <- function(embedding, k = 15L,
                                 metric = c("euclidean", "cosine"),
-                                device = c("auto", "cuda", "cpu")) {
+                                device = c("auto", "cuda", "cpu"),
+                                batch_size = 256L) {
   if (inherits(embedding, "cuda_pca")) {
     embedding <- embedding$x
   }
@@ -205,7 +213,8 @@ cuda_cell_neighbors <- function(embedding, k = 15L,
     embedding,
     k = k,
     metric = match.arg(metric),
-    device = device
+    device = device,
+    batch_size = batch_size
   )
 }
 
@@ -216,6 +225,7 @@ cuda_cell_neighbors <- function(embedding, k = 15L,
 #' @param n_components PCA components.
 #' @param k Neighbours per cell.
 #' @param device Computation device.
+#' @param batch_size Maximum query rows per exact kNN distance block.
 #' @return A list containing normalized counts, variable features, PCA, and kNN.
 #' @export
 #' @examples
@@ -226,7 +236,8 @@ cuda_cell_neighbors <- function(embedding, k = 15L,
 #' )
 cudacell_workflow <- function(counts, n_hvg = 2000L,
                               n_components = 30L, k = 15L,
-                              device = c("auto", "cuda", "cpu")) {
+                              device = c("auto", "cuda", "cpu"),
+                              batch_size = 256L) {
   counts <- .cell_counts(counts)
   if (!is.numeric(n_hvg) || length(n_hvg) != 1L || is.na(n_hvg) ||
       !is.finite(n_hvg) || n_hvg < 1 || n_hvg != as.integer(n_hvg)) {
@@ -245,7 +256,12 @@ cudacell_workflow <- function(counts, n_hvg = 2000L,
     scale. = TRUE,
     device = device
   )
-  neighbours <- cuda_cell_neighbors(pca, k = k, device = device)
+  neighbours <- cuda_cell_neighbors(
+    pca,
+    k = k,
+    device = device,
+    batch_size = batch_size
+  )
   structure(
     list(
       normalized = normalized,

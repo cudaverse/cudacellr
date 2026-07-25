@@ -1,6 +1,6 @@
 Package: cudacellr
 Title: GPU-Aware Single-Cell Analysis Workflows for R
-Version: 0.1.0
+Version: 0.1.1
 Authors@R:
     person("Yaoxiang", "Li", email = "liyaoxiang@outlook.com",
            role = c("aut", "cre"))
@@ -10,13 +10,14 @@ Description: Provides experimental R-native single-cell analysis primitives
     analysis, and nearest-neighbour construction. Integrates the 'cudaverse'
     sparse and learning layers while preserving R matrix conventions.
 License: MIT + file LICENSE
-URL: https://github.com/cudaverse/cudacellr
+URL: https://cudaverse.github.io/cudacellr/,
+    https://github.com/cudaverse/cudacellr
 BugReports: https://github.com/cudaverse/cudacellr/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Imports:
-    cudalearnr,
-    cudasparsr,
+    cudalearnr (>= 0.1.1),
+    cudasparsr (>= 0.1.1),
     Matrix,
     methods
 Remotes:
