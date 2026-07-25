@@ -11,7 +11,8 @@ keeping features in rows and cells in columns at the public R boundary.
 - highly variable feature selection;
 - PCA through `cudalearnr`;
 - k-nearest neighbours through `cudalearnr`;
-- a composable end-to-end workflow result.
+- a composable end-to-end workflow result that reuses each preprocessing
+  stage instead of repeating normalization and feature selection.
 
 ## Installation
 

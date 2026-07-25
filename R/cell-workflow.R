@@ -115,35 +115,18 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
   result[order(result$dispersion, decreasing = TRUE), , drop = FALSE]
 }
 
-#' Run PCA on highly variable single-cell features
-#'
-#' @param counts Feature-by-cell matrix.
-#' @param n_components Number of principal components.
-#' @param n_hvg Number of highly variable features.
-#' @param scale. Whether to scale selected features before PCA.
-#' @param device Device passed to [cudalearnr::cuda_pca()].
-#' @return A `cuda_pca` object with an additional `features` element.
-#' @export
-#' @examples
-#' set.seed(2)
-#' counts <- matrix(rpois(30 * 20, lambda = 2), 30, 20)
-#' cuda_cell_pca(counts, n_components = 3, n_hvg = 10, device = "cpu")
-cuda_cell_pca <- function(counts, n_components = 30L, n_hvg = 2000L,
-                          scale. = TRUE,
-                          device = c("auto", "cuda", "cpu")) {
-  counts <- .cell_counts(counts)
-  if (!is.numeric(n_hvg) || length(n_hvg) != 1L || is.na(n_hvg) ||
-      !is.finite(n_hvg) || n_hvg < 1 || n_hvg != as.integer(n_hvg)) {
-    stop("`n_hvg` must be a positive whole number.", call. = FALSE)
-  }
+.cell_n_components <- function(n_components) {
   if (!is.numeric(n_components) || length(n_components) != 1L ||
       is.na(n_components) || !is.finite(n_components) ||
       n_components < 1 || n_components != as.integer(n_components)) {
     stop("`n_components` must be a positive whole number.", call. = FALSE)
   }
-  n_hvg <- min(as.integer(n_hvg), nrow(counts))
-  normalized <- cuda_normalize_counts(counts)
-  variable <- cuda_hvg(normalized, n_top = n_hvg)
+  as.integer(n_components)
+}
+
+.cell_pca_from_normalized <- function(normalized, variable, n_components,
+                                      scale., device) {
+  n_components <- .cell_n_components(n_components)
   features <- variable$feature[variable$selected]
   feature_index <- match(features, rownames(normalized))
   if (anyNA(feature_index)) {
@@ -166,6 +149,40 @@ cuda_cell_pca <- function(counts, n_components = 30L, n_hvg = 2000L,
   )
   fit$features <- features
   fit
+}
+
+#' Run PCA on highly variable single-cell features
+#'
+#' @param counts Feature-by-cell matrix.
+#' @param n_components Number of principal components.
+#' @param n_hvg Number of highly variable features.
+#' @param scale. Whether to scale selected features before PCA.
+#' @param device Device passed to [cudalearnr::cuda_pca()].
+#' @return A `cuda_pca` object with an additional `features` element.
+#' @export
+#' @examples
+#' set.seed(2)
+#' counts <- matrix(rpois(30 * 20, lambda = 2), 30, 20)
+#' cuda_cell_pca(counts, n_components = 3, n_hvg = 10, device = "cpu")
+cuda_cell_pca <- function(counts, n_components = 30L, n_hvg = 2000L,
+                          scale. = TRUE,
+                          device = c("auto", "cuda", "cpu")) {
+  counts <- .cell_counts(counts)
+  if (!is.numeric(n_hvg) || length(n_hvg) != 1L || is.na(n_hvg) ||
+      !is.finite(n_hvg) || n_hvg < 1 || n_hvg != as.integer(n_hvg)) {
+    stop("`n_hvg` must be a positive whole number.", call. = FALSE)
+  }
+  n_hvg <- min(as.integer(n_hvg), nrow(counts))
+  n_components <- .cell_n_components(n_components)
+  normalized <- cuda_normalize_counts(counts)
+  variable <- cuda_hvg(normalized, n_top = n_hvg)
+  .cell_pca_from_normalized(
+    normalized = normalized,
+    variable = variable,
+    n_components = n_components,
+    scale. = scale.,
+    device = device
+  )
 }
 
 #' Construct a nearest-neighbour representation
@@ -215,15 +232,17 @@ cudacell_workflow <- function(counts, n_hvg = 2000L,
       !is.finite(n_hvg) || n_hvg < 1 || n_hvg != as.integer(n_hvg)) {
     stop("`n_hvg` must be a positive whole number.", call. = FALSE)
   }
+  n_components <- .cell_n_components(n_components)
   normalized <- cuda_normalize_counts(counts)
   variable <- cuda_hvg(
     normalized,
     n_top = min(as.integer(n_hvg), nrow(counts))
   )
-  pca <- cuda_cell_pca(
-    counts,
+  pca <- .cell_pca_from_normalized(
+    normalized = normalized,
+    variable = variable,
     n_components = n_components,
-    n_hvg = n_hvg,
+    scale. = TRUE,
     device = device
   )
   neighbours <- cuda_cell_neighbors(pca, k = k, device = device)

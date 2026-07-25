@@ -51,6 +51,40 @@ test_that("workflow returns all analysis stages", {
   )
 })
 
+test_that("workflow reuses normalization and HVG preprocessing", {
+  normalizations <- 0L
+  selections <- 0L
+  normalize_original <- cuda_normalize_counts
+  hvg_original <- cuda_hvg
+  testthat::local_mocked_bindings(
+    cuda_normalize_counts = function(...) {
+      normalizations <<- normalizations + 1L
+      normalize_original(...)
+    },
+    cuda_hvg = function(...) {
+      selections <<- selections + 1L
+      hvg_original(...)
+    },
+    .package = "cudacellr"
+  )
+
+  fit <- cudacell_workflow(
+    example_counts(),
+    n_hvg = 10,
+    n_components = 3,
+    k = 4,
+    device = "cpu"
+  )
+
+  expect_s3_class(fit, "cudacell_workflow")
+  expect_identical(normalizations, 1L)
+  expect_identical(selections, 1L)
+  expect_setequal(
+    fit$pca$features,
+    fit$variable_features$feature[fit$variable_features$selected]
+  )
+})
+
 test_that("invalid count matrices fail clearly", {
   counts <- as.matrix(example_counts())
   counts[[1]] <- -1
