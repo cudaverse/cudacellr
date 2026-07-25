@@ -25,7 +25,7 @@ cuda_cell_neighbors(
 values reduce peak distance memory.}
 }
 \value{
-A \code{cuda_knn} object.
+A \code{cuda_knn} object retaining cell names from the embedding.
 }
 \description{
 Construct a nearest-neighbour representation

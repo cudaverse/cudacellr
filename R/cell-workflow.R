@@ -10,10 +10,12 @@
     stop("`counts` must be a matrix, Matrix object, or cudasparse matrix.",
          call. = FALSE)
   }
+  count_dimnames <- dimnames(counts)
   counts <- methods::as(
     methods::as(methods::as(counts, "dMatrix"), "generalMatrix"),
     "CsparseMatrix"
   )
+  dimnames(counts) <- count_dimnames
   if (nrow(counts) < 2L || ncol(counts) < 2L) {
     stop("`counts` must contain at least two features and two cells.",
          call. = FALSE)
@@ -32,7 +34,7 @@
 #' @param counts A base matrix, `Matrix` sparse matrix, or `cudasparse`.
 #' @param scale_factor Target library size.
 #' @param log1p Whether to apply `log1p()` to non-zero normalized values.
-#' @return A sparse `Matrix::dgCMatrix`.
+#' @return A sparse `Matrix::dgCMatrix` with the input feature and cell names.
 #' @export
 #' @examples
 #' counts <- Matrix::Matrix(matrix(c(1, 0, 3, 2, 4, 1), 3), sparse = TRUE)
@@ -45,6 +47,9 @@ cuda_normalize_counts <- function(counts, scale_factor = 10000,
       scale_factor <= 0) {
     stop("`scale_factor` must be a positive finite number.", call. = FALSE)
   }
+  if (!is.logical(log1p) || length(log1p) != 1L || is.na(log1p)) {
+    stop("`log1p` must be TRUE or FALSE.", call. = FALSE)
+  }
   library_size <- as.numeric(Matrix::colSums(counts))
   if (any(library_size == 0)) {
     stop("Every cell must have a positive library size.", call. = FALSE)
@@ -53,7 +58,8 @@ cuda_normalize_counts <- function(counts, scale_factor = 10000,
     x = scale_factor / library_size
   )
   normalized <- methods::as(normalized, "dgCMatrix")
-  if (isTRUE(log1p)) {
+  dimnames(normalized) <- dimnames(counts)
+  if (log1p) {
     normalized@x <- base::log1p(normalized@x)
   }
   normalized
@@ -65,7 +71,8 @@ cuda_normalize_counts <- function(counts, scale_factor = 10000,
 #' @param n_top Number of features to select.
 #' @param min_mean Minimum feature mean.
 #' @return A data frame ordered by dispersion with feature statistics and a
-#'   `selected` indicator.
+#'   `selected` indicator. The `index` column retains the original feature
+#'   position even when feature names are duplicated.
 #' @export
 #' @examples
 #' set.seed(1)
@@ -106,6 +113,7 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
     variance = variance,
     dispersion = dispersion,
     selected = FALSE,
+    index = seq_len(nrow(counts)),
     stringsAsFactors = FALSE
   )
   eligible <- which(result$mean >= min_mean)
@@ -127,12 +135,12 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
 .cell_pca_from_normalized <- function(normalized, variable, n_components,
                                       scale., device) {
   n_components <- .cell_n_components(n_components)
-  features <- variable$feature[variable$selected]
-  feature_index <- match(features, rownames(normalized))
-  if (anyNA(feature_index)) {
-    feature_index <- match(features, paste0("feature_", seq_len(nrow(normalized))))
-  }
+  selected <- variable[variable$selected, , drop = FALSE]
+  features <- selected$feature
+  feature_index <- selected$index
   dense <- t(as.matrix(normalized[feature_index, , drop = FALSE]))
+  rownames(dense) <- colnames(normalized)
+  colnames(dense) <- features
   max_components <- min(nrow(dense) - 1L, ncol(dense))
   if (n_components > max_components) {
     stop(
@@ -158,7 +166,8 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
 #' @param n_hvg Number of highly variable features.
 #' @param scale. Whether to scale selected features before PCA.
 #' @param device Device passed to [cudalearnr::cuda_pca()].
-#' @return A `cuda_pca` object with an additional `features` element.
+#' @return A `cuda_pca` object with an additional `features` element. Cell
+#'   names label PCA score rows and selected feature names label loadings.
 #' @export
 #' @examples
 #' set.seed(2)
@@ -193,7 +202,7 @@ cuda_cell_pca <- function(counts, n_components = 30L, n_hvg = 2000L,
 #' @param device Computation device.
 #' @param batch_size Maximum query rows per exact kNN distance block. Smaller
 #'   values reduce peak distance memory.
-#' @return A `cuda_knn` object.
+#' @return A `cuda_knn` object retaining cell names from the embedding.
 #' @export
 #' @examples
 #' cuda_cell_neighbors(
@@ -226,7 +235,8 @@ cuda_cell_neighbors <- function(embedding, k = 15L,
 #' @param k Neighbours per cell.
 #' @param device Computation device.
 #' @param batch_size Maximum query rows per exact kNN distance block.
-#' @return A list containing normalized counts, variable features, PCA, and kNN.
+#' @return A list containing normalized counts, variable features, PCA, and
+#'   kNN. Feature and cell identifiers are retained throughout all stages.
 #' @export
 #' @examples
 #' set.seed(3)
@@ -271,4 +281,21 @@ cudacell_workflow <- function(counts, n_hvg = 2000L,
     ),
     class = "cudacell_workflow"
   )
+}
+
+#' @export
+print.cudacell_workflow <- function(x, ...) {
+  cat(sprintf(
+    paste0(
+      "<cudacell_workflow features=%s cells=%s hvg=%s ",
+      "components=%s k=%s device=%s>\n"
+    ),
+    nrow(x$normalized),
+    ncol(x$normalized),
+    sum(x$variable_features$selected),
+    ncol(x$pca$x),
+    ncol(x$neighbors$index),
+    x$pca$device
+  ))
+  invisible(x)
 }

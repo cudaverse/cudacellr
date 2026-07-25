@@ -15,7 +15,8 @@ cuda_hvg(counts, n_top = 2000L, min_mean = 0)
 }
 \value{
 A data frame ordered by dispersion with feature statistics and a
-\code{selected} indicator.
+\code{selected} indicator. The \code{index} column retains the original feature
+position even when feature names are duplicated.
 }
 \description{
 Select highly variable features

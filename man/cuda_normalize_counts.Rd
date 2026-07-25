@@ -14,7 +14,7 @@ cuda_normalize_counts(counts, scale_factor = 10000, log1p = TRUE)
 \item{log1p}{Whether to apply \code{log1p()} to non-zero normalized values.}
 }
 \value{
-A sparse \code{Matrix::dgCMatrix}.
+A sparse \code{Matrix::dgCMatrix} with the input feature and cell names.
 }
 \description{
 Counts are expected with features in rows and cells in columns.

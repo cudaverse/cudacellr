@@ -13,6 +13,7 @@ test_that("normalization preserves sparse shape and library scaling", {
 
   expect_s4_class(normalized, "dgCMatrix")
   expect_identical(dim(normalized), c(30L, 20L))
+  expect_identical(dimnames(normalized), dimnames(example_counts()))
   expect_equal(as.numeric(Matrix::colSums(normalized)), rep(1000, 20))
 })
 
@@ -21,7 +22,9 @@ test_that("HVG selection returns ranked feature statistics", {
 
   expect_equal(sum(hvg$selected), 8)
   expect_true(all(diff(hvg$dispersion) <= 0))
-  expect_true(all(c("mean", "variance", "dispersion") %in% names(hvg)))
+  expect_true(all(
+    c("index", "feature", "mean", "variance", "dispersion") %in% names(hvg)
+  ))
 })
 
 test_that("PCA and neighbors compose", {
@@ -44,6 +47,10 @@ test_that("PCA and neighbors compose", {
   expect_s3_class(pca, "cuda_pca")
   expect_identical(dim(pca$x), c(20L, 3L))
   expect_length(pca$features, 10)
+  expect_identical(rownames(pca$x), colnames(example_counts()))
+  expect_identical(rownames(pca$rotation), pca$features)
+  expect_identical(rownames(neighbours$index), colnames(example_counts()))
+  expect_identical(dimnames(neighbours$distance), dimnames(neighbours$index))
   expect_identical(dim(neighbours$index), c(20L, 4L))
   expect_identical(neighbours$index, one_at_a_time$index)
   expect_equal(neighbours$distance, one_at_a_time$distance)
@@ -63,6 +70,12 @@ test_that("workflow returns all analysis stages", {
     fit,
     c("normalized", "variable_features", "pca", "neighbors")
   )
+  expect_identical(rownames(fit$pca$x), colnames(example_counts()))
+  expect_identical(
+    rownames(fit$neighbors$index),
+    colnames(example_counts())
+  )
+  expect_output(print(fit), "<cudacell_workflow")
 })
 
 test_that("workflow reuses normalization and HVG preprocessing", {
@@ -111,4 +124,22 @@ test_that("invalid count matrices fail clearly", {
   expect_error(cuda_cell_pca(counts, n_hvg = NA), "positive whole")
   expect_error(cuda_cell_pca(counts, n_components = 0), "positive whole")
   expect_error(cudacell_workflow(counts, n_hvg = 1.5), "positive whole")
+  expect_error(cuda_normalize_counts(example_counts(), log1p = NA), "TRUE or FALSE")
+})
+
+test_that("duplicate feature names retain their original positions", {
+  counts <- example_counts()
+  rownames(counts)[1:2] <- "duplicated_gene"
+  variable <- cuda_hvg(counts, n_top = 10)
+  pca <- cudacellr:::.cell_pca_from_normalized(
+    normalized = cuda_normalize_counts(counts),
+    variable = variable,
+    n_components = 3,
+    scale. = TRUE,
+    device = "cpu"
+  )
+
+  selected <- variable[variable$selected, , drop = FALSE]
+  expect_identical(pca$features, selected$feature)
+  expect_identical(rownames(pca$rotation), selected$feature)
 })

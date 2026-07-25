@@ -27,7 +27,8 @@ cudacell_workflow(
 \item{batch_size}{Maximum query rows per exact kNN distance block.}
 }
 \value{
-A list containing normalized counts, variable features, PCA, and kNN.
+A list containing normalized counts, variable features, PCA, and
+kNN. Feature and cell identifiers are retained throughout all stages.
 }
 \description{
 Run the initial cudacellr workflow

@@ -24,7 +24,8 @@ cuda_cell_pca(
 \item{device}{Device passed to \code{\link[cudalearnr:cuda_pca]{cudalearnr::cuda_pca()}}.}
 }
 \value{
-A \code{cuda_pca} object with an additional \code{features} element.
+A \code{cuda_pca} object with an additional \code{features} element. Cell
+names label PCA score rows and selected feature names label loadings.
 }
 \description{
 Run PCA on highly variable single-cell features
