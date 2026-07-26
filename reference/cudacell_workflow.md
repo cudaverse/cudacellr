@@ -54,5 +54,5 @@ counts <- matrix(rpois(40 * 25, 2), 40, 25)
 cudacell_workflow(
   counts, n_hvg = 15, n_components = 5, k = 5, device = "cpu"
 )
-#> <cudacell_workflow features=40 cells=25 hvg=15 components=5 k=5 device=cpu>
+#> <cudacell_workflow features=40 cells=25 hvg=15 components=5 k=5 pca_device=cpu compute=cpu>
 ```

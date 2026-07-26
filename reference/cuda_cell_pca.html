@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cudacellr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -16,6 +16,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -83,7 +84,7 @@ names label PCA score rows and selected feature names label loadings.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">30</span> <span class="op">*</span> <span class="fl">20</span>, lambda <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, <span class="fl">30</span>, <span class="fl">20</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">cuda_cell_pca</span><span class="op">(</span><span class="va">counts</span>, n_components <span class="op">=</span> <span class="fl">3</span>, n_hvg <span class="op">=</span> <span class="fl">10</span>, device <span class="op">=</span> <span class="st">"cpu"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;cuda_pca components=3 device=cpu&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;cuda_pca components=3 device=cpu compute=cpu backend=stats&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                    PC1          PC2         PC3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> feature_6   0.02608630  0.512558175  0.19860552</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> feature_7  -0.36704292  0.393908021  0.27650371</span>

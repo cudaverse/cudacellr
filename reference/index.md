@@ -18,3 +18,8 @@
 
 - [`cudacell_workflow()`](https://cudaverse.github.io/cudacellr/reference/cudacell_workflow.md)
   : Run the initial cudacellr workflow
+
+## Provenance
+
+- [`cuda_provenance()`](https://cudaverse.github.io/cudacellr/reference/cuda_provenance.md)
+  : Inspect actual compute provenance

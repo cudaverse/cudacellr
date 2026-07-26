@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">cudacellr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -101,6 +102,62 @@
 <p>HVG results also include the original feature <code>index</code>, so repeated feature names do not cause PCA to select the wrong matrix row.</p>
 <p>Continue from this result through graph clustering and embedding in the cudaverse <a href="https://github.com/cudaverse/.github/blob/main/WORKFLOW.md" class="external-link">end-to-end workflow</a>.</p>
 <p>Neighbour search is exact but uses bounded distance blocks. At most <code>min(batch_size, cells) * cells</code> distances are held at once instead of a full cell-by-cell matrix. Reduce <code>batch_size</code> when memory is constrained; the selected neighbours are deterministic and do not change with batch size.</p>
+</div>
+<div class="section level2">
+<h2 id="backend-provenance">Backend provenance<a class="anchor" aria-label="anchor" href="#backend-provenance"></a>
+</h2>
+<p>Normalization and highly variable feature selection stay sparse and run on the CPU. PCA and kNN distance blocks can use CUDA, while deterministic neighbour selection remains on the CPU:</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr>
+<th>Function</th>
+<th>Device-selected work</th>
+<th>Always-CPU work</th>
+<th>CUDA aggregate</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code><a href="reference/cuda_normalize_counts.html">cuda_normalize_counts()</a></code></td>
+<td>none</td>
+<td>sparse normalization</td>
+<td><code>cpu</code></td>
+</tr>
+<tr>
+<td><code><a href="reference/cuda_hvg.html">cuda_hvg()</a></code></td>
+<td>none</td>
+<td>sparse feature statistics and ranking</td>
+<td><code>cpu</code></td>
+</tr>
+<tr>
+<td><code><a href="reference/cuda_cell_pca.html">cuda_cell_pca()</a></code></td>
+<td>PCA preprocessing and decomposition</td>
+<td>normalization and HVG selection</td>
+<td><code>hybrid</code></td>
+</tr>
+<tr>
+<td><code><a href="reference/cuda_cell_neighbors.html">cuda_cell_neighbors()</a></code></td>
+<td>kNN distance blocks</td>
+<td>neighbour selection</td>
+<td><code>hybrid</code></td>
+</tr>
+<tr>
+<td><code><a href="reference/cudacell_workflow.html">cudacell_workflow()</a></code></td>
+<td>PCA and kNN distance stages</td>
+<td>sparse preprocessing and neighbour selection</td>
+<td><code>hybrid</code></td>
+</tr>
+</tbody>
+</table>
+<p>Inspect the runtime and any result without guessing from its function name:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">cudatensr</span><span class="fu">::</span><span class="fu"><a href="https://cudaverse.github.io/cudatensr/reference/cuda_diagnostics.html" class="external-link">cuda_diagnostics</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/cuda_provenance.html">cuda_provenance</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<p>The provenance table separates the requested device, actual compute device, output device, and an automatic fallback. See <a href="https://cudaverse.github.io/cudacellr/articles/backend-provenance.html">Backend provenance and CUDA diagnostics</a> for a runnable CPU workflow, dense-PCA and kNN memory guidance, and the hardware-CI gate.</p>
 </div>
 <div class="section level2">
 <h2 id="object-integration">Object integration<a class="anchor" aria-label="anchor" href="#object-integration"></a>

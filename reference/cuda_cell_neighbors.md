@@ -50,5 +50,5 @@ cuda_cell_neighbors(
   batch_size = 4,
   device = "cpu"
 )
-#> <cuda_knn observations=20 k=5 metric=euclidean device=cpu>
+#> <cuda_knn observations=20 k=5 metric=euclidean distance_device=cpu compute=cpu backend=base>
 ```

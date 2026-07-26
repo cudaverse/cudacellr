@@ -48,7 +48,7 @@ label PCA score rows and selected feature names label loadings.
 set.seed(2)
 counts <- matrix(rpois(30 * 20, lambda = 2), 30, 20)
 cuda_cell_pca(counts, n_components = 3, n_hvg = 10, device = "cpu")
-#> <cuda_pca components=3 device=cpu>
+#> <cuda_pca components=3 device=cpu compute=cpu backend=stats>
 #>                    PC1          PC2         PC3
 #> feature_6   0.02608630  0.512558175  0.19860552
 #> feature_7  -0.36704292  0.393908021  0.27650371

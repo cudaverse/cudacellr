@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cudacellr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -16,6 +16,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -32,6 +33,14 @@
       <small>Source: <a href="https://github.com/cudaverse/cudacellr/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.0" id="cudacellr-020">cudacellr 0.2.0<a class="anchor" aria-label="anchor" href="#cudacellr-020"></a></h2>
+<ul><li>Normalization, HVG selection, PCA, and kNN now compose into one ordered <code>cudaverse-stage/1</code> provenance record, including upstream sparse materialization.</li>
+<li>
+<code><a href="../reference/cudacell_workflow.html">cudacell_workflow()</a></code> reports its aggregate CPU/CUDA/hybrid compute device, and its print method no longer implies that the PCA device represents the complete workflow.</li>
+<li>Strict CUDA requests are validated before CPU preprocessing begins, avoiding expensive work before an unavailable-device error.</li>
+<li>Re-exported <code><a href="../reference/cuda_provenance.html">cuda_provenance()</a></code> as the common inspector for single-cell results.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.2" id="cudacellr-012">cudacellr 0.1.2<a class="anchor" aria-label="anchor" href="#cudacellr-012"></a></h2>
 <ul><li>Feature and cell identifiers now survive normalization, HVG selection, PCA, kNN, and the complete workflow. HVG results retain original feature indices, including when feature names are duplicated.</li>

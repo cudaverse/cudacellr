@@ -71,6 +71,36 @@ full cell-by-cell matrix. Reduce `batch_size` when memory is
 constrained; the selected neighbours are deterministic and do not change
 with batch size.
 
+## Backend provenance
+
+Normalization and highly variable feature selection stay sparse and run
+on the CPU. PCA and kNN distance blocks can use CUDA, while
+deterministic neighbour selection remains on the CPU:
+
+| Function | Device-selected work | Always-CPU work | CUDA aggregate |
+|----|----|----|----|
+| [`cuda_normalize_counts()`](https://cudaverse.github.io/cudacellr/reference/cuda_normalize_counts.md) | none | sparse normalization | `cpu` |
+| [`cuda_hvg()`](https://cudaverse.github.io/cudacellr/reference/cuda_hvg.md) | none | sparse feature statistics and ranking | `cpu` |
+| [`cuda_cell_pca()`](https://cudaverse.github.io/cudacellr/reference/cuda_cell_pca.md) | PCA preprocessing and decomposition | normalization and HVG selection | `hybrid` |
+| [`cuda_cell_neighbors()`](https://cudaverse.github.io/cudacellr/reference/cuda_cell_neighbors.md) | kNN distance blocks | neighbour selection | `hybrid` |
+| [`cudacell_workflow()`](https://cudaverse.github.io/cudacellr/reference/cudacell_workflow.md) | PCA and kNN distance stages | sparse preprocessing and neighbour selection | `hybrid` |
+
+Inspect the runtime and any result without guessing from its function
+name:
+
+``` r
+
+cudatensr::cuda_diagnostics()
+cuda_provenance(fit)
+```
+
+The provenance table separates the requested device, actual compute
+device, output device, and an automatic fallback. See [Backend
+provenance and CUDA
+diagnostics](https://cudaverse.github.io/cudacellr/articles/backend-provenance.html)
+for a runnable CPU workflow, dense-PCA and kNN memory guidance, and the
+hardware-CI gate.
+
 ## Object integration
 
 The current API accepts base, `Matrix`, and `cudasparse` matrices.
@@ -107,3 +137,14 @@ MIT © Yaoxiang Li
 - [`cudacell_workflow()`](https://cudaverse.github.io/cudacellr/reference/cudacell_workflow.md)
   : Run the initial cudacellr workflow
 
+## Provenance
+
+- [`cuda_provenance()`](https://cudaverse.github.io/cudacellr/reference/cuda_provenance.md)
+  : Inspect actual compute provenance
+
+# Articles
+
+### Backend and provenance
+
+- [Backend provenance and CUDA
+  diagnostics](https://cudaverse.github.io/cudacellr/articles/backend-provenance.md):
