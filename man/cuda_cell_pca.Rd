@@ -9,7 +9,10 @@ cuda_cell_pca(
   n_components = 30L,
   n_hvg = 2000L,
   scale. = TRUE,
-  device = c("auto", "cuda", "cpu")
+  device = c("auto", "cuda", "cpu"),
+  scale_factor = 10000,
+  log1p = TRUE,
+  min_mean = 0
 )
 }
 \arguments{
@@ -22,6 +25,13 @@ cuda_cell_pca(
 \item{scale.}{Whether to scale selected features before PCA.}
 
 \item{device}{Device passed to \code{\link[cudalearnr:cuda_pca]{cudalearnr::cuda_pca()}}.}
+
+\item{scale_factor}{Target library size used during normalization.}
+
+\item{log1p}{Whether to apply \code{log1p()} after library-size normalization.}
+
+\item{min_mean}{Minimum feature mean used during highly variable feature
+selection.}
 }
 \value{
 A \code{cuda_pca} object with an additional \code{features} element. Cell

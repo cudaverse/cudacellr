@@ -10,7 +10,11 @@ cudacell_workflow(
   n_components = 30L,
   k = 15L,
   device = c("auto", "cuda", "cpu"),
-  batch_size = 256L
+  batch_size = 256L,
+  scale_factor = 10000,
+  log1p = TRUE,
+  min_mean = 0,
+  scale. = TRUE
 )
 }
 \arguments{
@@ -25,6 +29,15 @@ cudacell_workflow(
 \item{device}{Computation device.}
 
 \item{batch_size}{Maximum query rows per exact kNN distance block.}
+
+\item{scale_factor}{Target library size used during normalization.}
+
+\item{log1p}{Whether to apply \code{log1p()} after library-size normalization.}
+
+\item{min_mean}{Minimum feature mean used during highly variable feature
+selection.}
+
+\item{scale.}{Whether to scale selected features before PCA.}
 }
 \value{
 A list containing normalized counts, variable features, PCA, and

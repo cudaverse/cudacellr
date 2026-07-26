@@ -95,9 +95,44 @@ hardware-CI gate.
 
 ## Object integration
 
-The current API accepts base, `Matrix`, and `cudasparse` matrices. Native
-SingleCellExperiment and Seurat adapters are the next integration milestone;
-they are intentionally not hard dependencies of the numerical core.
+The numerical core accepts base, `Matrix`, and `cudasparse` matrices.
+`cudacell_sce()` adds an optional native `SingleCellExperiment` workflow
+without making Bioconductor packages hard dependencies:
+
+```r
+library(SingleCellExperiment)
+
+sce <- SingleCellExperiment(assays = list(counts = counts))
+sce <- cudacell_sce(
+  sce,
+  n_hvg = 300,
+  n_components = 20,
+  k = 15,
+  batch_size = 128,
+  device = "cpu"
+)
+
+assayNames(sce)
+reducedDimNames(sce)
+colPairNames(sce)
+cuda_provenance(sce)
+```
+
+The adapter writes natural-log normalized expression to
+`cudacell_logcounts`, PCA scores to `CUDACELL_PCA`, HVG statistics to
+namespaced `rowData` columns, and directed kNN relationships to
+`CUDACELL_KNN`. Existing assays, metadata, reduced dimensions, alternative
+experiments, labels, pairings, and size factors remain unchanged.
+
+Output names are deliberately namespaced and never silently replaced.
+`overwrite = TRUE` replaces only the explicitly named cudacellr fields.
+Delayed assays also remain lazy unless `realize = TRUE` is requested after
+checking that the assay fits in memory. See the
+[SingleCellExperiment workflow](https://cudaverse.github.io/cudacellr/articles/single-cell-experiment.html)
+for the complete object contract.
+
+Seurat integration remains a later milestone, after the Bioconductor object
+contract has been exercised in real workflows.
 
 For installation, device verification, memory advice, and common failures, see
 the cudaverse

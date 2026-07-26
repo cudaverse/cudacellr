@@ -1,0 +1,206 @@
+---
+title: "A native SingleCellExperiment workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{A native SingleCellExperiment workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+`cudacell_sce()` runs the complete cudacellr preprocessing, PCA, and nearest
+neighbour workflow while keeping results in the native
+`SingleCellExperiment` data model. It returns a modified copy; the input
+object is not changed.
+
+The Bioconductor packages are optional so matrix-only users do not acquire a
+large mandatory dependency tree:
+
+```{r install, eval=FALSE}
+BiocManager::install("SingleCellExperiment")
+```
+
+## Start with a populated object
+
+This example intentionally includes an unrelated assay, row and column
+metadata, a pre-existing reduced dimension, top-level metadata, size factors,
+and an alternative experiment. All of them must survive the workflow.
+
+```{r fixture}
+library(cudacellr)
+library(Matrix)
+library(SingleCellExperiment)
+
+set.seed(42)
+counts <- matrix(
+  rpois(80 * 30, lambda = 2),
+  nrow = 80,
+  ncol = 30,
+  dimnames = list(
+    paste0("gene_", seq_len(80)),
+    paste0("cell_", seq_len(30))
+  )
+)
+counts[1, ] <- counts[1, ] + 1
+counts <- Matrix(counts, sparse = TRUE)
+
+sce <- SingleCellExperiment(
+  assays = list(
+    counts = counts,
+    untouched = counts * 2
+  ),
+  rowData = S4Vectors::DataFrame(
+    symbol = paste0("symbol_", seq_len(nrow(counts)))
+  ),
+  colData = S4Vectors::DataFrame(
+    batch = rep(c("one", "two"), each = 15)
+  ),
+  metadata = list(owner = "unchanged"),
+  reducedDims = list(
+    EXISTING = matrix(rnorm(60), nrow = 30)
+  )
+)
+sizeFactors(sce) <- rep(1, ncol(sce))
+altExp(sce, "spike") <- SingleCellExperiment(
+  assays = list(
+    counts = matrix(
+      rpois(5 * ncol(sce), 1),
+      nrow = 5,
+      dimnames = list(paste0("spike_", 1:5), colnames(sce))
+    )
+  )
+)
+```
+
+## Run the workflow
+
+The default output names are namespaced so common pre-existing `logcounts` and
+`PCA` entries are not overwritten:
+
+```{r workflow}
+result <- cudacell_sce(
+  sce,
+  assay = "counts",
+  n_hvg = 30,
+  n_components = 5,
+  k = 5,
+  batch_size = 8,
+  device = "cpu"
+)
+
+assayNames(result)
+reducedDimNames(result)
+colPairNames(result)
+```
+
+The result locations follow their SingleCellExperiment semantics:
+
+```{r outputs}
+assay(result, "cudacell_logcounts")[1:3, 1:3]
+reducedDim(result, "CUDACELL_PCA")[1:3, , drop = FALSE]
+rowData(result)[
+  1:3,
+  c(
+    "cudacell_mean",
+    "cudacell_variance",
+    "cudacell_dispersion",
+    "cudacell_hvg",
+    "cudacell_hvg_rank"
+  )
+]
+colPair(result, "CUDACELL_KNN")
+```
+
+`CUDACELL_KNN` is a directed `SelfHits` object. Its metadata columns contain
+distance and neighbour rank. Unlike an integer matrix hidden in top-level
+metadata, this representation automatically remaps cell indices when the SCE
+is subset.
+
+## Verify preservation
+
+The original object is unchanged and unrelated fields are retained:
+
+```{r preservation}
+identical(assay(sce, "counts"), assay(result, "counts"))
+identical(assay(sce, "untouched"), assay(result, "untouched"))
+identical(rowData(sce)$symbol, rowData(result)$symbol)
+identical(colData(sce)$batch, colData(result)$batch)
+identical(reducedDim(sce, "EXISTING"), reducedDim(result, "EXISTING"))
+identical(altExp(sce, "spike"), altExp(result, "spike"))
+identical(sizeFactors(sce), sizeFactors(result))
+identical(metadata(sce)$owner, metadata(result)$owner)
+```
+
+Feature statistics are mapped by their original integer row position, not by
+feature name. Duplicate feature names are therefore safe.
+
+## Normalization and size factors
+
+The default normalized assay uses natural `log1p`, so it is named
+`cudacell_logcounts` rather than the Bioconductor convention `logcounts`,
+which commonly implies log base 2. Set `log1p = FALSE` to create
+`cudacell_normalized`, or choose an explicit output name:
+
+```{r normalization, eval=FALSE}
+result <- cudacell_sce(
+  sce,
+  log1p = FALSE,
+  normalized_assay = "normalized_counts",
+  scale_factor = 10000,
+  n_hvg = 30,
+  n_components = 5,
+  k = 5,
+  device = "cpu"
+)
+```
+
+The actual divisor, `library_size / scale_factor`, is always stored in
+`colData(result)$cudacell_size_factor`. Canonical `sizeFactors(result)` are
+left untouched unless `set_size_factors = TRUE`. Replacing existing canonical
+size factors additionally requires `overwrite = TRUE`.
+
+## Collision and memory safety
+
+Every target assay, reduced dimension, colPair, rowData column, colData
+column, and the `cudacellr` metadata record is checked before computation.
+Rerunning with the same names fails rather than discarding data:
+
+```{r collision, error=TRUE}
+cudacell_sce(
+  result,
+  n_hvg = 30,
+  n_components = 5,
+  k = 5,
+  device = "cpu"
+)
+```
+
+Use `overwrite = TRUE` only when replacing those exact cudacellr outputs is
+intentional. No unrelated field is replaced.
+
+On-disk and other delayed assays are also rejected by default. cudacellr does
+not silently turn a potentially enormous delayed assay into an in-memory
+matrix. `realize = TRUE` is an explicit opt-in after checking the expected
+memory requirement.
+
+## Provenance and downstream embeddings
+
+The lightweight metadata record contains parameters, output locations, and
+the same validated `cudaverse-stage/1` compute stages as the matrix workflow:
+
+```{r provenance}
+cuda_provenance(result)
+metadata(result)$cudacellr$parameters
+```
+
+Per-feature, per-cell, and graph-shaped results do not live in top-level
+metadata because that metadata is not remapped by row or column subsetting.
+For a downstream embedding, pass `result` directly to a compatible
+`cudaembedr` function or explicitly use
+`reducedDim(result, "CUDACELL_PCA")`.

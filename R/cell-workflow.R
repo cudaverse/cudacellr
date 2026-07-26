@@ -100,6 +100,9 @@
 #' @return A `cuda_provenance` data frame.
 #' @export
 cuda_provenance <- function(x) {
+  if (inherits(x, "SingleCellExperiment")) {
+    return(.sce_provenance(x))
+  }
   cudatensr::cuda_provenance(x)
 }
 
@@ -290,6 +293,10 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
 #' @param n_hvg Number of highly variable features.
 #' @param scale. Whether to scale selected features before PCA.
 #' @param device Device passed to [cudalearnr::cuda_pca()].
+#' @param scale_factor Target library size used during normalization.
+#' @param log1p Whether to apply `log1p()` after library-size normalization.
+#' @param min_mean Minimum feature mean used during highly variable feature
+#'   selection.
 #' @return A `cuda_pca` object with an additional `features` element. Cell
 #'   names label PCA score rows and selected feature names label loadings.
 #' @export
@@ -299,7 +306,9 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
 #' cuda_cell_pca(counts, n_components = 3, n_hvg = 10, device = "cpu")
 cuda_cell_pca <- function(counts, n_components = 30L, n_hvg = 2000L,
                           scale. = TRUE,
-                          device = c("auto", "cuda", "cpu")) {
+                          device = c("auto", "cuda", "cpu"),
+                          scale_factor = 10000, log1p = TRUE,
+                          min_mean = 0) {
   device <- match.arg(device)
   cudatensr::cuda_select_device(device)
   input_stages <- .cell_input_stages(counts)
@@ -310,7 +319,11 @@ cuda_cell_pca <- function(counts, n_components = 30L, n_hvg = 2000L,
   }
   n_hvg <- min(as.integer(n_hvg), nrow(counts))
   n_components <- .cell_n_components(n_components)
-  normalized <- cuda_normalize_counts(counts)
+  normalized <- cuda_normalize_counts(
+    counts,
+    scale_factor = scale_factor,
+    log1p = log1p
+  )
   if (length(input_stages)) {
     normalized <- .with_cell_provenance(
       normalized,
@@ -320,7 +333,11 @@ cuda_cell_pca <- function(counts, n_components = 30L, n_hvg = 2000L,
       )
     )
   }
-  variable <- cuda_hvg(normalized, n_top = n_hvg)
+  variable <- cuda_hvg(
+    normalized,
+    n_top = n_hvg,
+    min_mean = min_mean
+  )
   .cell_pca_from_normalized(
     normalized = normalized,
     variable = variable,
@@ -382,6 +399,11 @@ cuda_cell_neighbors <- function(embedding, k = 15L,
 #' @param k Neighbours per cell.
 #' @param device Computation device.
 #' @param batch_size Maximum query rows per exact kNN distance block.
+#' @param scale_factor Target library size used during normalization.
+#' @param log1p Whether to apply `log1p()` after library-size normalization.
+#' @param min_mean Minimum feature mean used during highly variable feature
+#'   selection.
+#' @param scale. Whether to scale selected features before PCA.
 #' @return A list containing normalized counts, variable features, PCA, and
 #'   kNN. Feature and cell identifiers are retained throughout all stages.
 #' @export
@@ -394,7 +416,9 @@ cuda_cell_neighbors <- function(embedding, k = 15L,
 cudacell_workflow <- function(counts, n_hvg = 2000L,
                               n_components = 30L, k = 15L,
                               device = c("auto", "cuda", "cpu"),
-                              batch_size = 256L) {
+                              batch_size = 256L,
+                              scale_factor = 10000, log1p = TRUE,
+                              min_mean = 0, scale. = TRUE) {
   device <- match.arg(device)
   cudatensr::cuda_select_device(device)
   input_stages <- .cell_input_stages(counts)
@@ -404,7 +428,11 @@ cudacell_workflow <- function(counts, n_hvg = 2000L,
     stop("`n_hvg` must be a positive whole number.", call. = FALSE)
   }
   n_components <- .cell_n_components(n_components)
-  normalized <- cuda_normalize_counts(counts)
+  normalized <- cuda_normalize_counts(
+    counts,
+    scale_factor = scale_factor,
+    log1p = log1p
+  )
   if (length(input_stages)) {
     normalized <- .with_cell_provenance(
       normalized,
@@ -416,13 +444,14 @@ cudacell_workflow <- function(counts, n_hvg = 2000L,
   }
   variable <- cuda_hvg(
     normalized,
-    n_top = min(as.integer(n_hvg), nrow(counts))
+    n_top = min(as.integer(n_hvg), nrow(counts)),
+    min_mean = min_mean
   )
   pca <- .cell_pca_from_normalized(
     normalized = normalized,
     variable = variable,
     n_components = n_components,
-    scale. = TRUE,
+    scale. = scale.,
     device = device
   )
   neighbours <- cuda_cell_neighbors(

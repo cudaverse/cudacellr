@@ -4,6 +4,9 @@ template:
   bootstrap: 5
 
 articles:
+- title: Object integration
+  contents:
+  - single-cell-experiment
 - title: Backend and provenance
   contents:
   - backend-provenance
@@ -20,6 +23,9 @@ reference:
 - title: End-to-end workflows
   contents:
   - cudacell_workflow
+- title: SingleCellExperiment integration
+  contents:
+  - cudacell_sce
 - title: Provenance
   contents:
   - cuda_provenance
