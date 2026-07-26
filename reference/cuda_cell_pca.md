@@ -10,7 +10,10 @@ cuda_cell_pca(
   n_components = 30L,
   n_hvg = 2000L,
   scale. = TRUE,
-  device = c("auto", "cuda", "cpu")
+  device = c("auto", "cuda", "cpu"),
+  scale_factor = 10000,
+  log1p = TRUE,
+  min_mean = 0
 )
 ```
 
@@ -36,6 +39,19 @@ cuda_cell_pca(
 
   Device passed to
   [`cudalearnr::cuda_pca()`](https://cudaverse.github.io/cudalearnr/reference/cuda_pca.html).
+
+- scale_factor:
+
+  Target library size used during normalization.
+
+- log1p:
+
+  Whether to apply [`log1p()`](https://rdrr.io/r/base/Log.html) after
+  library-size normalization.
+
+- min_mean:
+
+  Minimum feature mean used during highly variable feature selection.
 
 ## Value
 

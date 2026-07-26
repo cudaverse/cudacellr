@@ -11,7 +11,11 @@ cudacell_workflow(
   n_components = 30L,
   k = 15L,
   device = c("auto", "cuda", "cpu"),
-  batch_size = 256L
+  batch_size = 256L,
+  scale_factor = 10000,
+  log1p = TRUE,
+  min_mean = 0,
+  scale. = TRUE
 )
 ```
 
@@ -40,6 +44,23 @@ cudacell_workflow(
 - batch_size:
 
   Maximum query rows per exact kNN distance block.
+
+- scale_factor:
+
+  Target library size used during normalization.
+
+- log1p:
+
+  Whether to apply [`log1p()`](https://rdrr.io/r/base/Log.html) after
+  library-size normalization.
+
+- min_mean:
+
+  Minimum feature mean used during highly variable feature selection.
+
+- scale.:
+
+  Whether to scale selected features before PCA.
 
 ## Value
 

@@ -19,6 +19,11 @@
 - [`cudacell_workflow()`](https://cudaverse.github.io/cudacellr/reference/cudacell_workflow.md)
   : Run the initial cudacellr workflow
 
+## SingleCellExperiment integration
+
+- [`cudacell_sce()`](https://cudaverse.github.io/cudacellr/reference/cudacell_sce.md)
+  : Run a cudacell workflow on a SingleCellExperiment
+
 ## Provenance
 
 - [`cuda_provenance()`](https://cudaverse.github.io/cudacellr/reference/cuda_provenance.md)

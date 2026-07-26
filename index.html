@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">cudacellr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -162,7 +162,27 @@
 <div class="section level2">
 <h2 id="object-integration">Object integration<a class="anchor" aria-label="anchor" href="#object-integration"></a>
 </h2>
-<p>The current API accepts base, <code>Matrix</code>, and <code>cudasparse</code> matrices. Native SingleCellExperiment and Seurat adapters are the next integration milestone; they are intentionally not hard dependencies of the numerical core.</p>
+<p>The numerical core accepts base, <code>Matrix</code>, and <code>cudasparse</code> matrices. <code><a href="reference/cudacell_sce.html">cudacell_sce()</a></code> adds an optional native <code>SingleCellExperiment</code> workflow without making Bioconductor packages hard dependencies:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">SingleCellExperiment</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">sce</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SingleCellExperiment/man/SingleCellExperiment.html" class="external-link">SingleCellExperiment</a></span><span class="op">(</span>assays <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>counts <span class="op">=</span> <span class="va">counts</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">sce</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cudacell_sce.html">cudacell_sce</a></span><span class="op">(</span></span>
+<span>  <span class="va">sce</span>,</span>
+<span>  n_hvg <span class="op">=</span> <span class="fl">300</span>,</span>
+<span>  n_components <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  k <span class="op">=</span> <span class="fl">15</span>,</span>
+<span>  batch_size <span class="op">=</span> <span class="fl">128</span>,</span>
+<span>  device <span class="op">=</span> <span class="st">"cpu"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assayNames</a></span><span class="op">(</span><span class="va">sce</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/SingleCellExperiment/man/reducedDims.html" class="external-link">reducedDimNames</a></span><span class="op">(</span><span class="va">sce</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/SingleCellExperiment/man/colPairs.html" class="external-link">colPairNames</a></span><span class="op">(</span><span class="va">sce</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/cuda_provenance.html">cuda_provenance</a></span><span class="op">(</span><span class="va">sce</span><span class="op">)</span></span></code></pre></div>
+<p>The adapter writes natural-log normalized expression to <code>cudacell_logcounts</code>, PCA scores to <code>CUDACELL_PCA</code>, HVG statistics to namespaced <code>rowData</code> columns, and directed kNN relationships to <code>CUDACELL_KNN</code>. Existing assays, metadata, reduced dimensions, alternative experiments, labels, pairings, and size factors remain unchanged.</p>
+<p>Output names are deliberately namespaced and never silently replaced. <code>overwrite = TRUE</code> replaces only the explicitly named cudacellr fields. Delayed assays also remain lazy unless <code>realize = TRUE</code> is requested after checking that the assay fits in memory. See the <a href="https://cudaverse.github.io/cudacellr/articles/single-cell-experiment.html">SingleCellExperiment workflow</a> for the complete object contract.</p>
+<p>Seurat integration remains a later milestone, after the Bioconductor object contract has been exercised in real workflows.</p>
 <p>For installation, device verification, memory advice, and common failures, see the cudaverse <a href="https://github.com/cudaverse/.github/blob/main/GPU_SETUP.md" class="external-link">GPU setup and troubleshooting guide</a>.</p>
 </div>
 <div class="section level2">
