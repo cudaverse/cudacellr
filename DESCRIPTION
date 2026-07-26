@@ -9,6 +9,8 @@ Description: Provides experimental R-native single-cell analysis primitives
     log-normalization, highly variable feature selection, principal component
     analysis, and nearest-neighbour construction. Integrates the 'cudaverse'
     sparse and learning layers while preserving R matrix conventions.
+    Optional adapters preserve native 'SingleCellExperiment' and
+    'SeuratObject' version 5 object structures.
 License: MIT + file LICENSE
 URL: https://cudaverse.github.io/cudacellr/,
     https://github.com/cudaverse/cudacellr
@@ -30,6 +32,7 @@ Suggests:
     knitr,
     rmarkdown,
     S4Vectors,
+    SeuratObject (>= 5.0.0),
     SingleCellExperiment,
     SummarizedExperiment,
     testthat (>= 3.0.0)

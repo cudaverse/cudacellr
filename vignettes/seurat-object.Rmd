@@ -1,0 +1,207 @@
+---
+title: "A native SeuratObject v5 workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{A native SeuratObject v5 workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+`cudacell_seurat()` runs the complete cudacellr preprocessing, PCA, and exact
+nearest-neighbour workflow while keeping every result in a native Seurat v5
+subobject. The adapter requires only `SeuratObject >= 5.0.0`; installing the
+full Seurat package is not necessary.
+
+```{r install, eval=FALSE}
+install.packages("SeuratObject")
+```
+
+## Start with a populated object
+
+This example contains a second assay, cell metadata, identities, a reduction,
+miscellaneous data, and a tool record. The workflow returns a modified copy
+and retains all of them.
+
+```{r fixture}
+library(cudacellr)
+library(Matrix)
+
+set.seed(42)
+counts <- Matrix(
+  matrix(
+    rpois(80 * 30, lambda = 2),
+    nrow = 80,
+    dimnames = list(
+      paste0("gene_", seq_len(80)),
+      paste0("cell_", seq_len(30))
+    )
+  ),
+  sparse = TRUE
+)
+counts[1, ] <- counts[1, ] + 1
+
+object <- SeuratObject::CreateSeuratObject(
+  counts = counts,
+  assay = "RNA",
+  meta.data = data.frame(
+    batch = rep(c("one", "two"), each = 15),
+    row.names = colnames(counts)
+  ),
+  project = "preserved-project"
+)
+object[["ADT"]] <- SeuratObject::CreateAssay5Object(
+  counts = counts[seq_len(5), , drop = FALSE]
+)
+object[["existing_pca"]] <- SeuratObject::CreateDimReducObject(
+  embeddings = matrix(
+    rnorm(ncol(counts) * 2),
+    nrow = ncol(counts),
+    dimnames = list(colnames(counts), c("OLDPC_1", "OLDPC_2"))
+  ),
+  assay = "RNA",
+  key = "OLDPC_"
+)
+SeuratObject::Idents(object) <- factor(
+  rep(c("A", "B"), each = 15)
+)
+SeuratObject::Misc(object, slot = "owner") <- "unchanged"
+add_example_tool <- function(x) {
+  SeuratObject::Tool(x) <- list(owner = "unchanged")
+  x
+}
+object <- add_example_tool(object)
+existing_tool_names <- SeuratObject::Tool(object)
+```
+
+## Run the workflow
+
+Input assay and layer names are exact. `assay = NULL` uses the default assay,
+while `layer = "counts"` is explicit by default.
+
+```{r workflow}
+result <- cudacell_seurat(
+  object,
+  assay = "RNA",
+  layer = "counts",
+  n_hvg = 30,
+  n_components = 5,
+  k = 5,
+  batch_size = 8,
+  device = "cpu"
+)
+
+SeuratObject::Assays(result)
+SeuratObject::Reductions(result)
+SeuratObject::Neighbors(result)
+```
+
+The default outputs use namespaced native locations:
+
+```{r outputs}
+normalized <- SeuratObject::LayerData(
+  result[["CUDACELL"]],
+  layer = "data",
+  fast = FALSE
+)
+normalized[1:3, 1:3]
+
+SeuratObject::Embeddings(result[["cudacell_pca"]])[1:3, , drop = FALSE]
+SeuratObject::Indices(result[["cudacell_knn"]])[1:3, , drop = FALSE]
+result[["CUDACELL"]][[]][
+  1:3,
+  c(
+    "cudacell_mean",
+    "cudacell_variance",
+    "cudacell_dispersion",
+    "cudacell_hvg",
+    "cudacell_hvg_rank"
+  )
+]
+```
+
+`cudacell_hvg_rank` is the one-based global dispersion rank across every
+input feature. `cudacell_hvg` marks the selected top `n_hvg` features, which
+are also registered through `SeuratObject::VariableFeatures()`.
+
+The exact directed kNN result is stored as a `Neighbor`, including both
+integer indices and distances. The PCA `DimReduc` includes cell embeddings,
+feature loadings, standard deviations, and the `CUDACELLPC_` key.
+
+## Verify preservation
+
+The input object is unchanged, and unrelated state survives in the result:
+
+```{r preservation}
+identical(
+  SeuratObject::LayerData(object[["RNA"]], "counts"),
+  SeuratObject::LayerData(result[["RNA"]], "counts")
+)
+identical(object[["ADT"]], result[["ADT"]])
+identical(object[["existing_pca"]], result[["existing_pca"]])
+identical(SeuratObject::Idents(object), SeuratObject::Idents(result))
+identical(
+  SeuratObject::Misc(object, slot = "owner"),
+  SeuratObject::Misc(result, slot = "owner")
+)
+all(vapply(
+  existing_tool_names,
+  function(name) {
+    identical(
+      SeuratObject::Tool(object, slot = name),
+      SeuratObject::Tool(result, slot = name)
+    )
+  },
+  logical(1)
+))
+```
+
+cudacellr adds its own deterministic `cudacell_seurat` tool record without
+replacing existing tool records.
+
+## Collision and realization safety
+
+Every target assay, reduction, neighbour, feature-metadata column,
+cell-metadata column, tool record, and Seurat key is checked before device
+selection, layer access, realization, or numerical work. A second run with
+the same names fails:
+
+```{r collision, error=TRUE}
+cudacell_seurat(
+  result,
+  n_hvg = 30,
+  n_components = 5,
+  k = 5,
+  device = "cpu"
+)
+```
+
+Use `overwrite = TRUE` only when replacing those exact cudacellr outputs is
+intentional. Cross-type name or key collisions are never overwritten.
+
+Only ordinary in-memory `matrix` and `Matrix` layers are accepted by default.
+Delayed, on-disk, and other matrix-like layers are not silently collected.
+Set `realize = TRUE` only after confirming that the selected layer fits in
+memory; the original layer class and materialization decision are recorded.
+
+For `device = "cuda"`, CUDA availability is validated before the layer is
+read or realized. The request remains strict and never silently falls back to
+CPU.
+
+## Provenance
+
+The native tool record contains identifiers, parameters, output locations,
+and the same ordered `cudaverse-stage/1` compute provenance used by the
+matrix and SingleCellExperiment workflows:
+
+```{r provenance}
+cuda_provenance(result)
+SeuratObject::Tool(result, slot = "cudacell_seurat")$outputs
+SeuratObject::Tool(result, slot = "cudacell_seurat")$parameters
+```

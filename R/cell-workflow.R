@@ -91,20 +91,19 @@
   stages
 }
 
-#' Inspect actual compute provenance
-#'
-#' This is the shared [cudatensr::cuda_provenance()] inspector, re-exposed for
-#' single-cell results.
-#'
-#' @param x A cudaverse result or named list of compute stages.
-#' @return A `cuda_provenance` data frame.
+#' @importFrom cudatensr cuda_provenance
 #' @export
-cuda_provenance <- function(x) {
-  if (inherits(x, "SingleCellExperiment")) {
-    return(.sce_provenance(x))
-  }
-  cudatensr::cuda_provenance(x)
-}
+cudatensr::cuda_provenance
+
+#' Inspect provenance stored on native single-cell containers
+#'
+#' These methods expose the shared [cudatensr::cuda_provenance()] contract for
+#' `SingleCellExperiment` and `Seurat` objects produced by `cudacellr`.
+#'
+#' @param x A supported native single-cell container.
+#' @return A `cuda_provenance` data frame.
+#' @name cuda_provenance-methods
+NULL
 
 .cell_counts <- function(counts) {
   if (inherits(counts, "cudasparse")) {

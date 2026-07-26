@@ -7,6 +7,7 @@ articles:
 - title: Object integration
   contents:
   - single-cell-experiment
+  - seurat-object
 - title: Backend and provenance
   contents:
   - backend-provenance
@@ -26,6 +27,10 @@ reference:
 - title: SingleCellExperiment integration
   contents:
   - cudacell_sce
+- title: SeuratObject v5 integration
+  contents:
+  - cudacell_seurat
 - title: Provenance
   contents:
   - cuda_provenance
+  - cuda_provenance-methods

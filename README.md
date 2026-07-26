@@ -131,8 +131,42 @@ checking that the assay fits in memory. See the
 [SingleCellExperiment workflow](https://cudaverse.github.io/cudacellr/articles/single-cell-experiment.html)
 for the complete object contract.
 
-Seurat integration remains a later milestone, after the Bioconductor object
-contract has been exercised in real workflows.
+Seurat v5 objects have the same non-destructive workflow through
+`cudacell_seurat()`. Only the lightweight `SeuratObject` package is needed;
+the full Seurat package is not required:
+
+```r
+object <- SeuratObject::CreateSeuratObject(counts = counts)
+object <- cudacell_seurat(
+  object,
+  assay = "RNA",
+  layer = "counts",
+  n_hvg = 300,
+  n_components = 20,
+  k = 15,
+  batch_size = 128,
+  device = "cpu"
+)
+
+SeuratObject::Assays(object)
+SeuratObject::Reductions(object)
+SeuratObject::Neighbors(object)
+cuda_provenance(object)
+```
+
+Normalized expression and feature statistics are written to a native
+`Assay5`, PCA scores and loadings to a `DimReduc`, exact neighbour indices
+and distances to a `Neighbor`, size factors to cell metadata, and parameters
+and compute provenance to the `cudacell_seurat` tool record. Existing assays,
+layers, reductions, graphs, neighbours, identities, metadata, and tools are
+preserved.
+
+All output names and Seurat keys are checked before device selection,
+realization, or computation. `overwrite = TRUE` targets only the named
+cudacellr outputs, and non-memory-backed layers require the explicit
+`realize = TRUE` opt-in. See the
+[SeuratObject v5 workflow](https://cudaverse.github.io/cudacellr/articles/seurat-object.html)
+for the full contract.
 
 For installation, device verification, memory advice, and common failures, see
 the cudaverse

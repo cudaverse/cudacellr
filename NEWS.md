@@ -1,5 +1,17 @@
 # cudacellr 0.3.0
 
+- Added `cudacell_seurat()` for a native Seurat v5 workflow using only the
+  optional `SeuratObject (>= 5.0.0)` package. It writes normalized expression
+  and feature statistics to an `Assay5`, PCA results to a `DimReduc`, exact
+  kNN results to a `Neighbor`, size factors to cell metadata, and parameters
+  and compute provenance to a deterministic tool record.
+- Seurat output names and keys are checked for cross-type collisions before
+  device selection, layer realization, or computation. Existing object state
+  is preserved, and `overwrite = TRUE` replaces only explicitly named
+  cudacellr outputs.
+- Non-memory-backed Seurat layers are never realized silently.
+  `realize = TRUE` explicitly opts into an in-memory sparse realization and
+  records the original class and materialization decision.
 - Added `cudacell_sce()` for a native, non-destructive
   `SingleCellExperiment` workflow. Normalized expression, PCA, HVG statistics,
   kNN relationships, and compute provenance are written to the corresponding
@@ -10,8 +22,9 @@
   replaced with `overwrite = TRUE`.
 - Delayed assays are never materialized silently. `realize = TRUE` is required
   to opt into an in-memory sparse realization.
-- `cuda_provenance()` now reads the ordered computation record directly from a
-  `SingleCellExperiment` produced by `cudacell_sce()`.
+- `cuda_provenance()` now dispatches through the shared cudaverse S3 generic
+  and reads the ordered computation record directly from
+  `SingleCellExperiment` and Seurat objects produced by cudacellr.
 - `cuda_cell_pca()` and `cudacell_workflow()` now expose normalization
   `scale_factor`, `log1p`, and `min_mean` controls; the complete workflow also
   exposes PCA scaling through `scale.`.

@@ -305,6 +305,13 @@
   cudatensr::cuda_provenance(holder)
 }
 
+#' @rdname cuda_provenance-methods
+#' @method cuda_provenance SingleCellExperiment
+#' @export
+cuda_provenance.SingleCellExperiment <- function(x) {
+  .sce_provenance(x)
+}
+
 #' Run a cudacell workflow on a SingleCellExperiment
 #'
 #' `cudacell_sce()` reads one assay, runs [cudacell_workflow()], and returns a
