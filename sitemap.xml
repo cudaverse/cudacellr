@@ -3,6 +3,7 @@
 <url><loc>https://cudaverse.github.io/cudacellr/LICENSE-text.html</loc></url>
 <url><loc>https://cudaverse.github.io/cudacellr/articles/backend-provenance.html</loc></url>
 <url><loc>https://cudaverse.github.io/cudacellr/articles/index.html</loc></url>
+<url><loc>https://cudaverse.github.io/cudacellr/articles/seurat-object.html</loc></url>
 <url><loc>https://cudaverse.github.io/cudacellr/articles/single-cell-experiment.html</loc></url>
 <url><loc>https://cudaverse.github.io/cudacellr/authors.html</loc></url>
 <url><loc>https://cudaverse.github.io/cudacellr/index.html</loc></url>
@@ -11,9 +12,11 @@
 <url><loc>https://cudaverse.github.io/cudacellr/reference/cuda_cell_pca.html</loc></url>
 <url><loc>https://cudaverse.github.io/cudacellr/reference/cuda_hvg.html</loc></url>
 <url><loc>https://cudaverse.github.io/cudacellr/reference/cuda_normalize_counts.html</loc></url>
-<url><loc>https://cudaverse.github.io/cudacellr/reference/cuda_provenance.html</loc></url>
+<url><loc>https://cudaverse.github.io/cudacellr/reference/cuda_provenance-methods.html</loc></url>
 <url><loc>https://cudaverse.github.io/cudacellr/reference/cudacell_sce.html</loc></url>
+<url><loc>https://cudaverse.github.io/cudacellr/reference/cudacell_seurat.html</loc></url>
 <url><loc>https://cudaverse.github.io/cudacellr/reference/cudacell_workflow.html</loc></url>
 <url><loc>https://cudaverse.github.io/cudacellr/reference/index.html</loc></url>
+<url><loc>https://cudaverse.github.io/cudacellr/reference/reexports.html</loc></url>
 </urlset>
 

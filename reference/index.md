@@ -24,7 +24,16 @@
 - [`cudacell_sce()`](https://cudaverse.github.io/cudacellr/reference/cudacell_sce.md)
   : Run a cudacell workflow on a SingleCellExperiment
 
+## SeuratObject v5 integration
+
+- [`cudacell_seurat()`](https://cudaverse.github.io/cudacellr/reference/cudacell_seurat.md)
+  : Run a cudacell workflow on a Seurat object
+
 ## Provenance
 
-- [`cuda_provenance()`](https://cudaverse.github.io/cudacellr/reference/cuda_provenance.md)
-  : Inspect actual compute provenance
+- [`reexports`](https://cudaverse.github.io/cudacellr/reference/reexports.md)
+  [`cuda_provenance`](https://cudaverse.github.io/cudacellr/reference/reexports.md)
+  : Objects exported from other packages
+- [`cuda_provenance(`*`<SingleCellExperiment>`*`)`](https://cudaverse.github.io/cudacellr/reference/cuda_provenance-methods.md)
+  [`cuda_provenance(`*`<Seurat>`*`)`](https://cudaverse.github.io/cudacellr/reference/cuda_provenance-methods.md)
+  : Inspect provenance stored on native single-cell containers

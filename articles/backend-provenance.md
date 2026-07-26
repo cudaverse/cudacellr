@@ -87,7 +87,7 @@ identical(rownames(fit$neighbors$index), colnames(counts))
 
 ## Read the provenance table
 
-[`cuda_provenance()`](https://cudaverse.github.io/cudacellr/reference/cuda_provenance.md)
+[`cuda_provenance()`](https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html)
 returns the ordered stages that produced an object. The workflow table
 includes fixed CPU preprocessing and the delegated `cudalearnr` PCA and
 kNN stages:

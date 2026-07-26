@@ -134,17 +134,17 @@ retain cell identifiers:</p>
 <div class="section level2">
 <h2 id="read-the-provenance-table">Read the provenance table<a class="anchor" aria-label="anchor" href="#read-the-provenance-table"></a>
 </h2>
-<p><code><a href="../reference/cuda_provenance.html">cuda_provenance()</a></code> returns the ordered stages that
+<p><code><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance()</a></code> returns the ordered stages that
 produced an object. The workflow table includes fixed CPU preprocessing
 and the delegated <code>cudalearnr</code> PCA and kNN stages:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/cuda_provenance.html">cuda_provenance</a></span><span class="op">(</span><span class="va">normalized</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">normalized</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;cuda_provenance schema=cudaverse-stage/1 stages=1 compute=cpu&gt;</span></span>
 <span><span class="co">#&gt;          stage requested_device device backend   selection_reason fallback</span></span>
 <span><span class="co">#&gt;  normalization        fixed-cpu    cpu  Matrix algorithm_cpu_only    FALSE</span></span>
 <span><span class="co">#&gt;  output_device</span></span>
 <span><span class="co">#&gt;            cpu</span></span>
-<span><span class="fu"><a href="../reference/cuda_provenance.html">cuda_provenance</a></span><span class="op">(</span><span class="va">variable</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">variable</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;cuda_provenance schema=cudaverse-stage/1 stages=2 compute=cpu&gt;</span></span>
 <span><span class="co">#&gt;          stage requested_device device backend   selection_reason fallback</span></span>
 <span><span class="co">#&gt;  normalization        fixed-cpu    cpu  Matrix algorithm_cpu_only    FALSE</span></span>
@@ -152,7 +152,7 @@ and the delegated <code>cudalearnr</code> PCA and kNN stages:</p>
 <span><span class="co">#&gt;  output_device</span></span>
 <span><span class="co">#&gt;            cpu</span></span>
 <span><span class="co">#&gt;            cpu</span></span>
-<span><span class="fu"><a href="../reference/cuda_provenance.html">cuda_provenance</a></span><span class="op">(</span><span class="va">pca</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">pca</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;cuda_provenance schema=cudaverse-stage/1 stages=4 compute=cpu&gt;</span></span>
 <span><span class="co">#&gt;              stage requested_device device backend   selection_reason fallback</span></span>
 <span><span class="co">#&gt;      normalization        fixed-cpu    cpu  Matrix algorithm_cpu_only    FALSE</span></span>
@@ -164,7 +164,7 @@ and the delegated <code>cudalearnr</code> PCA and kNN stages:</p>
 <span><span class="co">#&gt;            cpu</span></span>
 <span><span class="co">#&gt;            cpu</span></span>
 <span><span class="co">#&gt;            cpu</span></span>
-<span><span class="fu"><a href="../reference/cuda_provenance.html">cuda_provenance</a></span><span class="op">(</span><span class="va">neighbors</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">neighbors</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;cuda_provenance schema=cudaverse-stage/1 stages=6 compute=cpu&gt;</span></span>
 <span><span class="co">#&gt;                   stage requested_device device backend   selection_reason</span></span>
 <span><span class="co">#&gt;           normalization        fixed-cpu    cpu  Matrix algorithm_cpu_only</span></span>
@@ -180,7 +180,7 @@ and the delegated <code>cudalearnr</code> PCA and kNN stages:</p>
 <span><span class="co">#&gt;     FALSE           cpu</span></span>
 <span><span class="co">#&gt;     FALSE           cpu</span></span>
 <span><span class="co">#&gt;     FALSE           cpu</span></span>
-<span><span class="va">workflow_provenance</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_provenance.html">cuda_provenance</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="va">workflow_provenance</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="va">workflow_provenance</span></span>
 <span><span class="co">#&gt; &lt;cuda_provenance schema=cudaverse-stage/1 stages=6 compute=cpu&gt;</span></span>
 <span><span class="co">#&gt;                   stage requested_device device backend   selection_reason</span></span>
@@ -364,7 +364,7 @@ does not retry silently on CPU.</li>
 <span>    device <span class="op">=</span> <span class="st">"cuda"</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span>  <span class="va">cuda_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cuda_provenance.html">cuda_provenance</a></span><span class="op">(</span><span class="va">cuda_fit</span><span class="op">)</span></span>
+<span>  <span class="va">cuda_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">cuda_fit</span><span class="op">)</span></span>
 <span>  <span class="va">cuda_table</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cuda_table</span>, <span class="st">"compute_device"</span><span class="op">)</span></span>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>

@@ -3,6 +3,20 @@
 ## cudacellr 0.3.0
 
 - Added
+  [`cudacell_seurat()`](https://cudaverse.github.io/cudacellr/reference/cudacell_seurat.md)
+  for a native Seurat v5 workflow using only the optional
+  `SeuratObject (>= 5.0.0)` package. It writes normalized expression and
+  feature statistics to an `Assay5`, PCA results to a `DimReduc`, exact
+  kNN results to a `Neighbor`, size factors to cell metadata, and
+  parameters and compute provenance to a deterministic tool record.
+- Seurat output names and keys are checked for cross-type collisions
+  before device selection, layer realization, or computation. Existing
+  object state is preserved, and `overwrite = TRUE` replaces only
+  explicitly named cudacellr outputs.
+- Non-memory-backed Seurat layers are never realized silently.
+  `realize = TRUE` explicitly opts into an in-memory sparse realization
+  and records the original class and materialization decision.
+- Added
   [`cudacell_sce()`](https://cudaverse.github.io/cudacellr/reference/cudacell_sce.md)
   for a native, non-destructive `SingleCellExperiment` workflow.
   Normalized expression, PCA, HVG statistics, kNN relationships, and
@@ -14,10 +28,10 @@
   unless explicitly replaced with `overwrite = TRUE`.
 - Delayed assays are never materialized silently. `realize = TRUE` is
   required to opt into an in-memory sparse realization.
-- [`cuda_provenance()`](https://cudaverse.github.io/cudacellr/reference/cuda_provenance.md)
-  now reads the ordered computation record directly from a
-  `SingleCellExperiment` produced by
-  [`cudacell_sce()`](https://cudaverse.github.io/cudacellr/reference/cudacell_sce.md).
+- [`cuda_provenance()`](https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html)
+  now dispatches through the shared cudaverse S3 generic and reads the
+  ordered computation record directly from `SingleCellExperiment` and
+  Seurat objects produced by cudacellr.
 - [`cuda_cell_pca()`](https://cudaverse.github.io/cudacellr/reference/cuda_cell_pca.md)
   and
   [`cudacell_workflow()`](https://cudaverse.github.io/cudacellr/reference/cudacell_workflow.md)
@@ -37,7 +51,7 @@
 - Strict CUDA requests are validated before CPU preprocessing begins,
   avoiding expensive work before an unavailable-device error.
 - Re-exported
-  [`cuda_provenance()`](https://cudaverse.github.io/cudacellr/reference/cuda_provenance.md)
+  [`cuda_provenance()`](https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html)
   as the common inspector for single-cell results.
 
 ## cudacellr 0.1.2
