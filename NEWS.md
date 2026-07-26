@@ -1,3 +1,16 @@
+# cudacellr 0.2.0
+
+- Normalization, HVG selection, PCA, and kNN now compose into one ordered
+  `cudaverse-stage/1` provenance record, including upstream sparse
+  materialization.
+- `cudacell_workflow()` reports its aggregate CPU/CUDA/hybrid compute device,
+  and its print method no longer implies that the PCA device represents the
+  complete workflow.
+- Strict CUDA requests are validated before CPU preprocessing begins, avoiding
+  expensive work before an unavailable-device error.
+- Re-exported `cuda_provenance()` as the common inspector for single-cell
+  results.
+
 # cudacellr 0.1.2
 
 - Feature and cell identifiers now survive normalization, HVG selection, PCA,

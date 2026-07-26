@@ -1,6 +1,6 @@
 Package: cudacellr
 Title: GPU-Aware Single-Cell Analysis Workflows for R
-Version: 0.1.2
+Version: 0.2.0
 Authors@R:
     person("Yaoxiang", "Li", email = "liyaoxiang@outlook.com",
            role = c("aut", "cre"))
@@ -16,14 +16,19 @@ BugReports: https://github.com/cudaverse/cudacellr/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Imports:
-    cudalearnr (>= 0.1.2),
-    cudasparsr (>= 0.1.2),
+    cudatensr (>= 0.2.0),
+    cudalearnr (>= 0.2.0),
+    cudasparsr (>= 0.2.0),
     Matrix,
     methods
 Remotes:
+    cudaverse/cudatensr,
     cudaverse/cudalearnr,
     cudaverse/cudasparsr
 Suggests:
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0

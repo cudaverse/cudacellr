@@ -1,3 +1,108 @@
+.cell_provenance_metadata <- function(stages) {
+  provenance <- cudatensr::cuda_provenance(stages)
+  list(
+    provenance_schema = attr(provenance, "schema", exact = TRUE),
+    compute_device = attr(provenance, "compute_device", exact = TRUE),
+    compute_stages = attr(provenance, "compute_stages", exact = TRUE)
+  )
+}
+
+.with_cell_provenance <- function(x, stages) {
+  metadata <- .cell_provenance_metadata(stages)
+  if (is.list(x) && is.null(dim(x)) && !methods::is(x, "Matrix")) {
+    x$provenance_schema <- metadata$provenance_schema
+    x$compute_device <- metadata$compute_device
+    x$compute_stages <- metadata$compute_stages
+    return(x)
+  }
+  attr(x, "provenance_schema") <- metadata$provenance_schema
+  attr(x, "compute_device") <- metadata$compute_device
+  attr(x, "compute_stages") <- metadata$compute_stages
+  x
+}
+
+.cell_has_compute_stages <- function(x) {
+  if (is.list(x) && "compute_stages" %in% names(x)) {
+    return(TRUE)
+  }
+  !is.null(attr(x, "compute_stages", exact = TRUE))
+}
+
+.cell_source_stages <- function(x) {
+  if (!.cell_has_compute_stages(x)) {
+    return(list())
+  }
+  attr(
+    cudatensr::cuda_provenance(x),
+    "compute_stages",
+    exact = TRUE
+  )
+}
+
+.cell_cpu_stage <- function(backend = "Matrix",
+                            reason = "algorithm_cpu_only") {
+  cudatensr::cuda_stage(
+    requested_device = "fixed-cpu",
+    device = "cpu",
+    backend = backend,
+    selection_reason = reason,
+    fallback = FALSE,
+    output_device = "cpu"
+  )
+}
+
+.cell_prefix_stages <- function(stages, prefix) {
+  if (!length(stages)) {
+    return(stages)
+  }
+  names(stages) <- paste0(prefix, names(stages))
+  stages
+}
+
+.cell_append_stages <- function(stages, additions) {
+  duplicate <- intersect(names(stages), names(additions))
+  if (length(duplicate)) {
+    stop(
+      sprintf(
+        "Duplicate compute stage name: %s.",
+        paste(duplicate, collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+  c(stages, additions)
+}
+
+.cell_input_stages <- function(x) {
+  stages <- .cell_source_stages(x)
+  if (inherits(x, "cudasparse")) {
+    stages <- .cell_prefix_stages(stages, "source_")
+  }
+  if (inherits(x, "cudasparse") && identical(x$device, "cuda")) {
+    stages <- .cell_append_stages(
+      stages,
+      list(
+        input_materialization = .cell_cpu_stage(
+          reason = "input_transfer"
+        )
+      )
+    )
+  }
+  stages
+}
+
+#' Inspect actual compute provenance
+#'
+#' This is the shared [cudatensr::cuda_provenance()] inspector, re-exposed for
+#' single-cell results.
+#'
+#' @param x A cudaverse result or named list of compute stages.
+#' @return A `cuda_provenance` data frame.
+#' @export
+cuda_provenance <- function(x) {
+  cudatensr::cuda_provenance(x)
+}
+
 .cell_counts <- function(counts) {
   if (inherits(counts, "cudasparse")) {
     counts <- cudasparsr::to_dgCMatrix(counts)
@@ -41,6 +146,7 @@
 #' cuda_normalize_counts(counts)
 cuda_normalize_counts <- function(counts, scale_factor = 10000,
                                   log1p = TRUE) {
+  stages <- .cell_input_stages(counts)
   counts <- .cell_counts(counts)
   if (!is.numeric(scale_factor) || length(scale_factor) != 1L ||
       is.na(scale_factor) || !is.finite(scale_factor) ||
@@ -62,7 +168,11 @@ cuda_normalize_counts <- function(counts, scale_factor = 10000,
   if (log1p) {
     normalized@x <- base::log1p(normalized@x)
   }
-  normalized
+  stages <- .cell_append_stages(
+    stages,
+    list(normalization = .cell_cpu_stage())
+  )
+  .with_cell_provenance(normalized, stages)
 }
 
 #' Select highly variable features
@@ -80,6 +190,7 @@ cuda_normalize_counts <- function(counts, scale_factor = 10000,
 #' counts@x <- abs(round(counts@x * 5))
 #' cuda_hvg(counts, n_top = 5)
 cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
+  stages <- .cell_input_stages(counts)
   counts <- .cell_counts(counts)
   if (!is.numeric(n_top) || length(n_top) != 1L || is.na(n_top) ||
       n_top < 1 || n_top > nrow(counts) ||
@@ -120,7 +231,12 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
   ranked <- eligible[order(result$dispersion[eligible], decreasing = TRUE)]
   selected <- utils::head(ranked, as.integer(n_top))
   result$selected[selected] <- TRUE
-  result[order(result$dispersion, decreasing = TRUE), , drop = FALSE]
+  result <- result[order(result$dispersion, decreasing = TRUE), , drop = FALSE]
+  stages <- .cell_append_stages(
+    stages,
+    list(hvg = .cell_cpu_stage())
+  )
+  .with_cell_provenance(result, stages)
 }
 
 .cell_n_components <- function(n_components) {
@@ -156,7 +272,15 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
     device = device
   )
   fit$features <- features
-  fit
+  preprocessing <- .cell_source_stages(variable)
+  pca_stages <- .cell_prefix_stages(
+    .cell_source_stages(fit),
+    "pca_"
+  )
+  .with_cell_provenance(
+    fit,
+    .cell_append_stages(preprocessing, pca_stages)
+  )
 }
 
 #' Run PCA on highly variable single-cell features
@@ -176,6 +300,9 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
 cuda_cell_pca <- function(counts, n_components = 30L, n_hvg = 2000L,
                           scale. = TRUE,
                           device = c("auto", "cuda", "cpu")) {
+  device <- match.arg(device)
+  cudatensr::cuda_select_device(device)
+  input_stages <- .cell_input_stages(counts)
   counts <- .cell_counts(counts)
   if (!is.numeric(n_hvg) || length(n_hvg) != 1L || is.na(n_hvg) ||
       !is.finite(n_hvg) || n_hvg < 1 || n_hvg != as.integer(n_hvg)) {
@@ -184,6 +311,15 @@ cuda_cell_pca <- function(counts, n_components = 30L, n_hvg = 2000L,
   n_hvg <- min(as.integer(n_hvg), nrow(counts))
   n_components <- .cell_n_components(n_components)
   normalized <- cuda_normalize_counts(counts)
+  if (length(input_stages)) {
+    normalized <- .with_cell_provenance(
+      normalized,
+      .cell_append_stages(
+        input_stages,
+        .cell_source_stages(normalized)
+      )
+    )
+  }
   variable <- cuda_hvg(normalized, n_top = n_hvg)
   .cell_pca_from_normalized(
     normalized = normalized,
@@ -215,15 +351,26 @@ cuda_cell_neighbors <- function(embedding, k = 15L,
                                 metric = c("euclidean", "cosine"),
                                 device = c("auto", "cuda", "cpu"),
                                 batch_size = 256L) {
+  device <- match.arg(device)
+  cudatensr::cuda_select_device(device)
+  source_stages <- .cell_source_stages(embedding)
   if (inherits(embedding, "cuda_pca")) {
     embedding <- embedding$x
   }
-  cudalearnr::cuda_knn(
+  result <- cudalearnr::cuda_knn(
     embedding,
     k = k,
     metric = match.arg(metric),
     device = device,
     batch_size = batch_size
+  )
+  neighbor_stages <- .cell_prefix_stages(
+    .cell_source_stages(result),
+    "knn_"
+  )
+  .with_cell_provenance(
+    result,
+    .cell_append_stages(source_stages, neighbor_stages)
   )
 }
 
@@ -248,6 +395,9 @@ cudacell_workflow <- function(counts, n_hvg = 2000L,
                               n_components = 30L, k = 15L,
                               device = c("auto", "cuda", "cpu"),
                               batch_size = 256L) {
+  device <- match.arg(device)
+  cudatensr::cuda_select_device(device)
+  input_stages <- .cell_input_stages(counts)
   counts <- .cell_counts(counts)
   if (!is.numeric(n_hvg) || length(n_hvg) != 1L || is.na(n_hvg) ||
       !is.finite(n_hvg) || n_hvg < 1 || n_hvg != as.integer(n_hvg)) {
@@ -255,6 +405,15 @@ cudacell_workflow <- function(counts, n_hvg = 2000L,
   }
   n_components <- .cell_n_components(n_components)
   normalized <- cuda_normalize_counts(counts)
+  if (length(input_stages)) {
+    normalized <- .with_cell_provenance(
+      normalized,
+      .cell_append_stages(
+        input_stages,
+        .cell_source_stages(normalized)
+      )
+    )
+  }
   variable <- cuda_hvg(
     normalized,
     n_top = min(as.integer(n_hvg), nrow(counts))
@@ -272,7 +431,7 @@ cudacell_workflow <- function(counts, n_hvg = 2000L,
     device = device,
     batch_size = batch_size
   )
-  structure(
+  output <- structure(
     list(
       normalized = normalized,
       variable_features = variable,
@@ -281,6 +440,7 @@ cudacell_workflow <- function(counts, n_hvg = 2000L,
     ),
     class = "cudacell_workflow"
   )
+  .with_cell_provenance(output, .cell_source_stages(neighbours))
 }
 
 #' @export
@@ -288,14 +448,15 @@ print.cudacell_workflow <- function(x, ...) {
   cat(sprintf(
     paste0(
       "<cudacell_workflow features=%s cells=%s hvg=%s ",
-      "components=%s k=%s device=%s>\n"
+      "components=%s k=%s pca_device=%s compute=%s>\n"
     ),
     nrow(x$normalized),
     ncol(x$normalized),
     sum(x$variable_features$selected),
     ncol(x$pca$x),
     ncol(x$neighbors$index),
-    x$pca$device
+    x$pca$device,
+    x$compute_device
   ))
   invisible(x)
 }

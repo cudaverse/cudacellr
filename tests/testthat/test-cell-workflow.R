@@ -68,7 +68,15 @@ test_that("workflow returns all analysis stages", {
   expect_s3_class(fit, "cudacell_workflow")
   expect_named(
     fit,
-    c("normalized", "variable_features", "pca", "neighbors")
+    c(
+      "normalized",
+      "variable_features",
+      "pca",
+      "neighbors",
+      "provenance_schema",
+      "compute_device",
+      "compute_stages"
+    )
   )
   expect_identical(rownames(fit$pca$x), colnames(example_counts()))
   expect_identical(
