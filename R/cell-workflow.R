@@ -1,5 +1,5 @@
 .cell_provenance_metadata <- function(stages) {
-  provenance <- cudatensr::cuda_provenance(stages)
+  provenance <- cudaverse::cuda_provenance(stages)
   list(
     provenance_schema = attr(provenance, "schema", exact = TRUE),
     compute_device = attr(provenance, "compute_device", exact = TRUE),
@@ -33,7 +33,7 @@
     return(list())
   }
   attr(
-    cudatensr::cuda_provenance(x),
+    cudaverse::cuda_provenance(x),
     "compute_stages",
     exact = TRUE
   )
@@ -41,7 +41,7 @@
 
 .cell_cpu_stage <- function(backend = "Matrix",
                             reason = "algorithm_cpu_only") {
-  cudatensr::cuda_stage(
+  cudaverse::cuda_stage(
     requested_device = "fixed-cpu",
     device = "cpu",
     backend = backend,
@@ -91,13 +91,13 @@
   stages
 }
 
-#' @importFrom cudatensr cuda_provenance
+#' @importFrom cudaverse cuda_provenance
 #' @export
-cudatensr::cuda_provenance
+cudaverse::cuda_provenance
 
 #' Inspect provenance stored on native single-cell containers
 #'
-#' These methods expose the shared [cudatensr::cuda_provenance()] contract for
+#' These methods expose the shared [cudaverse::cuda_provenance()] contract for
 #' `SingleCellExperiment` and `Seurat` objects produced by `cudacellr`.
 #'
 #' @param x A supported native single-cell container.
@@ -107,7 +107,7 @@ NULL
 
 .cell_counts <- function(counts) {
   if (inherits(counts, "cudasparse")) {
-    counts <- cudasparsr::to_dgCMatrix(counts)
+    counts <- cudaverse::to_dgCMatrix(counts)
   } else if (is.matrix(counts)) {
     if (!is.numeric(counts)) {
       stop("`counts` must contain numeric values.", call. = FALSE)
@@ -267,7 +267,7 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
       call. = FALSE
     )
   }
-  fit <- cudalearnr::cuda_pca(
+  fit <- cudaverse::cuda_pca(
     dense,
     n_components = n_components,
     scale. = scale.,
@@ -291,7 +291,7 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
 #' @param n_components Number of principal components.
 #' @param n_hvg Number of highly variable features.
 #' @param scale. Whether to scale selected features before PCA.
-#' @param device Device passed to [cudalearnr::cuda_pca()].
+#' @param device Device passed to [cudaverse::cuda_pca()].
 #' @param scale_factor Target library size used during normalization.
 #' @param log1p Whether to apply `log1p()` after library-size normalization.
 #' @param min_mean Minimum feature mean used during highly variable feature
@@ -309,7 +309,7 @@ cuda_cell_pca <- function(counts, n_components = 30L, n_hvg = 2000L,
                           scale_factor = 10000, log1p = TRUE,
                           min_mean = 0) {
   device <- match.arg(device)
-  cudatensr::cuda_select_device(device)
+  cudaverse::cuda_select_device(device)
   input_stages <- .cell_input_stages(counts)
   counts <- .cell_counts(counts)
   if (!is.numeric(n_hvg) || length(n_hvg) != 1L || is.na(n_hvg) ||
@@ -368,12 +368,12 @@ cuda_cell_neighbors <- function(embedding, k = 15L,
                                 device = c("auto", "cuda", "cpu"),
                                 batch_size = 256L) {
   device <- match.arg(device)
-  cudatensr::cuda_select_device(device)
+  cudaverse::cuda_select_device(device)
   source_stages <- .cell_source_stages(embedding)
   if (inherits(embedding, "cuda_pca")) {
     embedding <- embedding$x
   }
-  result <- cudalearnr::cuda_knn(
+  result <- cudaverse::cuda_knn(
     embedding,
     k = k,
     metric = match.arg(metric),
@@ -419,7 +419,7 @@ cudacell_workflow <- function(counts, n_hvg = 2000L,
                               scale_factor = 10000, log1p = TRUE,
                               min_mean = 0, scale. = TRUE) {
   device <- match.arg(device)
-  cudatensr::cuda_select_device(device)
+  cudaverse::cuda_select_device(device)
   input_stages <- .cell_input_stages(counts)
   counts <- .cell_counts(counts)
   if (!is.numeric(n_hvg) || length(n_hvg) != 1L || is.na(n_hvg) ||

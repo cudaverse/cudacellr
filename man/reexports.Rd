@@ -11,6 +11,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{cudatensr}{\code{\link[cudatensr:cuda_provenance]{cuda_provenance()}}}
+  \item{cudaverse}{\code{\link[cudaverse:cuda_provenance]{cuda_provenance()}}}
 }}
 

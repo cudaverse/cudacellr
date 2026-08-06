@@ -84,7 +84,7 @@ test_that("single-cell stages compose into one inspectable workflow", {
 })
 
 test_that("upstream sparse provenance is retained", {
-  sparse <- cudasparsr::cuda_sparse(
+  sparse <- cudaverse::cuda_sparse(
     .cell_test_counts(),
     device = "cpu"
   )
@@ -109,7 +109,7 @@ test_that("upstream sparse provenance is retained", {
 test_that("declared but invalid upstream provenance is not discarded", {
   counts <- .cell_test_counts()
   attr(counts, "compute_stages") <- list(
-    source = cudatensr::cuda_stage(
+    source = cudaverse::cuda_stage(
       requested_device = "fixed-cpu",
       device = "cpu",
       backend = "Matrix",
@@ -149,7 +149,7 @@ test_that("workflow validates strict CUDA before CPU preprocessing", {
   )
   testthat::local_mocked_bindings(
     cuda_diagnostics = function() unavailable,
-    .package = "cudatensr"
+    .package = "cudaverse"
   )
 
   condition <- tryCatch(

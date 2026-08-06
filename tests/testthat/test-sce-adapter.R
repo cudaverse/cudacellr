@@ -581,7 +581,7 @@ test_that("strict CUDA validation precedes delayed assay realization", {
   )
   testthat::local_mocked_bindings(
     cuda_diagnostics = function() unavailable,
-    .package = "cudatensr"
+    .package = "cudaverse"
   )
 
   condition <- tryCatch(

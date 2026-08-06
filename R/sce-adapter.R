@@ -302,7 +302,7 @@
     compute_device = record$compute_device,
     compute_stages = record$compute_stages
   )
-  cudatensr::cuda_provenance(holder)
+  cudaverse::cuda_provenance(holder)
 }
 
 #' @rdname cuda_provenance-methods
@@ -454,7 +454,7 @@ cudacell_sce <- function(x, assay = "counts", n_hvg = 2000L,
   }
 
   device <- match.arg(device)
-  cudatensr::cuda_select_device(device)
+  cudaverse::cuda_select_device(device)
   input <- .sce_assay(x, assay, realize = realize)
   counts <- .cell_counts(input$counts)
   fit <- cudacell_workflow(

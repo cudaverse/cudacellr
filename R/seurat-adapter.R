@@ -502,7 +502,7 @@
     compute_device = record$compute_device,
     compute_stages = record$compute_stages
   )
-  cudatensr::cuda_provenance(holder)
+  cudaverse::cuda_provenance(holder)
 }
 
 #' @rdname cuda_provenance-methods
@@ -714,7 +714,7 @@ cudacell_seurat <- function(x, assay = NULL, layer = "counts",
   }
 
   device <- match.arg(device)
-  cudatensr::cuda_select_device(device)
+  cudaverse::cuda_select_device(device)
   input <- .seurat_layer(
     x,
     assay = assay,

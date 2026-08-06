@@ -24,7 +24,7 @@ cuda_cell_pca(
 
 \item{scale.}{Whether to scale selected features before PCA.}
 
-\item{device}{Device passed to \code{\link[cudalearnr:cuda_pca]{cudalearnr::cuda_pca()}}.}
+\item{device}{Device passed to \code{\link[cudaverse:cuda_pca]{cudaverse::cuda_pca()}}.}
 
 \item{scale_factor}{Target library size used during normalization.}
 
