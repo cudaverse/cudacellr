@@ -1,3 +1,10 @@
+# cudacellr 0.4.0
+
+- Replaces the former `cudatensr`, `cudasparsr`, and `cudalearnr`
+  dependencies with the unified `cudaverse` package.
+- Preserves all existing single-cell workflow and adapter entry points.
+- Keeps `cuda_provenance()` as a re-export of the canonical cudaverse generic.
+
 # cudacellr 0.3.0
 
 - Added `cudacell_seurat()` for a native Seurat v5 workflow using only the

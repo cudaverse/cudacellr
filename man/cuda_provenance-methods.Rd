@@ -18,6 +18,6 @@
 A \code{cuda_provenance} data frame.
 }
 \description{
-These methods expose the shared \code{\link[cudatensr:cuda_provenance]{cudatensr::cuda_provenance()}} contract for
+These methods expose the shared \code{\link[cudaverse:cuda_provenance]{cudaverse::cuda_provenance()}} contract for
 \code{SingleCellExperiment} and \code{Seurat} objects produced by \code{cudacellr}.
 }

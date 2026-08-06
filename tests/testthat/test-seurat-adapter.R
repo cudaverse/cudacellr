@@ -284,7 +284,7 @@ test_that("cudacell_seurat writes native outputs and preserves object state", {
   expect_identical(tool$outputs$neighbor, "cudacell_knn")
   expect_identical(cuda_provenance(out), cuda_provenance(fit))
   expect_identical(
-    cudatensr::cuda_provenance(out),
+    cudaverse::cuda_provenance(out),
     cuda_provenance(fit)
   )
 })
@@ -674,7 +674,7 @@ test_that("strict CUDA validation precedes reading or realizing a layer", {
   )
   testthat::local_mocked_bindings(
     cuda_diagnostics = function() unavailable,
-    .package = "cudatensr"
+    .package = "cudaverse"
   )
 
   condition <- tryCatch(

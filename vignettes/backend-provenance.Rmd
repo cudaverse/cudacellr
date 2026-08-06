@@ -92,7 +92,7 @@ identical(rownames(fit$neighbors$index), colnames(counts))
 
 `cuda_provenance()` returns the ordered stages that produced an object. The
 workflow table includes fixed CPU preprocessing and the delegated
-`cudalearnr` PCA and kNN stages:
+`cudaverse` PCA and kNN stages:
 
 ```{r cpu-provenance}
 cuda_provenance(normalized)
@@ -142,7 +142,7 @@ sparse input must become a CPU `dgCMatrix`, provenance also records an
 The shared diagnostic does not install or download torch:
 
 ```{r diagnostics}
-diagnostics <- cudatensr::cuda_diagnostics()
+diagnostics <- cudaverse::cuda_diagnostics()
 diagnostics
 ```
 

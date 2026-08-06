@@ -151,3 +151,27 @@ test_that("duplicate feature names retain their original positions", {
   expect_identical(pca$features, selected$feature)
   expect_identical(rownames(pca$rotation), selected$feature)
 })
+
+test_that("workflow results compose with cudaverse embeddings", {
+  set.seed(2)
+  counts <- matrix(rpois(30 * 20, lambda = 2), 30, 20)
+  rownames(counts) <- paste0("gene_", seq_len(nrow(counts)))
+  colnames(counts) <- paste0("cell_", seq_len(ncol(counts)))
+
+  workflow <- cudacell_workflow(
+    counts,
+    n_hvg = 10,
+    n_components = 3,
+    k = 4,
+    batch_size = 2,
+    device = "cpu"
+  )
+  embedding <- cudaverse::cuda_diffusion_map(
+    workflow,
+    n_components = 2,
+    device = "cpu"
+  )
+
+  expect_identical(rownames(embedding$coordinates), colnames(counts))
+  expect_identical(embedding$source_class, "cudacell_workflow")
+})

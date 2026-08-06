@@ -9,8 +9,8 @@ keeping features in rows and cells in columns at the public R boundary.
 - library-size normalization;
 - sparse log-normalization;
 - highly variable feature selection;
-- PCA through `cudalearnr`;
-- k-nearest neighbours through `cudalearnr`;
+- PCA through `cudaverse`;
+- k-nearest neighbours through `cudaverse`;
 - a composable end-to-end workflow result that reuses each preprocessing
   stage instead of repeating normalization and feature selection.
 
@@ -83,7 +83,7 @@ neighbour selection remains on the CPU:
 Inspect the runtime and any result without guessing from its function name:
 
 ```r
-cudatensr::cuda_diagnostics()
+cudaverse::cuda_diagnostics()
 cuda_provenance(fit)
 ```
 

@@ -202,5 +202,5 @@ metadata(result)$cudacellr$parameters
 Per-feature, per-cell, and graph-shaped results do not live in top-level
 metadata because that metadata is not remapped by row or column subsetting.
 For a downstream embedding, pass `result` directly to a compatible
-`cudaembedr` function or explicitly use
+`cudaverse` function or explicitly use
 `reducedDim(result, "CUDACELL_PCA")`.
