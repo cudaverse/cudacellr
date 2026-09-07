@@ -1,8 +1,13 @@
 # cudacellr
 
-`cudacellr` is the R-native single-cell workflow layer of the **cudaverse**.
-It composes sparse count processing with GPU-aware numerical algorithms while
-keeping features in rows and cells in columns at the public R boundary.
+`cudacellr` takes a single-cell count matrix through normalization, variable
+feature selection, PCA, and exact nearest neighbours. Use it to accelerate
+PCA and neighbour search with NVIDIA CUDA while keeping familiar R matrices,
+cell identifiers, and optional SingleCellExperiment or SeuratObject results.
+
+The native CUDA backend comes from **cudaverse** and does not require torch or
+LibTorch. Sparse normalization and feature selection run on the CPU; PCA,
+distance calculations, and deterministic top-k selection can run on CUDA.
 
 ## Current workflow
 
@@ -16,12 +21,30 @@ keeping features in rows and cells in columns at the public R boundary.
 
 ## Installation
 
+For CUDA execution, prepare a Windows or Linux machine with an NVIDIA driver,
+cuBLAS 12, and cuSOLVER 11. Follow the
+[CUDA setup guide](https://cudaverse.github.io/cudaverse/articles/gpu-setup.html)
+before running the GPU examples. Current CUDA execution is unavailable on
+macOS; use a Windows or Linux GPU machine for these workflows.
+
 ```r
 # install.packages("pak")
 pak::pak("cudaverse/cudacellr")
+library(cudacellr)
+
+health <- cudaverse::cuda_diagnostics()
+health$summary
+health$next_steps
+health$selected_backend  # "native" for the lightweight CUDA path
+cudaverse::cuda_select_device("cuda")
 ```
 
-## Example
+An explicit `device = "cuda"` request fails with diagnostics when CUDA is
+unavailable; it does not silently run the requested GPU stages on the CPU.
+
+## A single-cell CUDA workflow
+
+Provide features in rows and cells in columns:
 
 ```r
 library(cudacellr)
@@ -29,7 +52,13 @@ library(Matrix)
 
 set.seed(1)
 counts <- Matrix(
-  matrix(rpois(1000 * 300, lambda = 1.5), 1000, 300),
+  matrix(
+    rpois(1000 * 300, lambda = 1.5), 1000, 300,
+    dimnames = list(
+      paste0("gene", seq_len(1000)),
+      paste0("cell", seq_len(300))
+    )
+  ),
   sparse = TRUE
 )
 
@@ -38,7 +67,8 @@ fit <- cudacell_workflow(
   n_hvg = 300,
   n_components = 20,
   k = 15,
-  batch_size = 128
+  batch_size = 128,
+  device = "cuda"
 )
 
 fit$pca
@@ -68,17 +98,25 @@ selected neighbours are deterministic and do not change with batch size.
 
 ## Backend provenance
 
-Normalization and highly variable feature selection stay sparse and run on
-the CPU. PCA and kNN distance blocks can use CUDA, while deterministic
-neighbour selection remains on the CPU:
+With the native backend, the compute boundaries are:
 
-| Function | Device-selected work | Always-CPU work | CUDA aggregate |
-|---|---|---|---|
-| `cuda_normalize_counts()` | none | sparse normalization | `cpu` |
-| `cuda_hvg()` | none | sparse feature statistics and ranking | `cpu` |
-| `cuda_cell_pca()` | PCA preprocessing and decomposition | normalization and HVG selection | `hybrid` |
-| `cuda_cell_neighbors()` | kNN distance blocks | neighbour selection | `hybrid` |
-| `cudacell_workflow()` | PCA and kNN distance stages | sparse preprocessing and neighbour selection | `hybrid` |
+| Function | Native CUDA work | CPU work and R outputs |
+|---|---|---|
+| `cuda_normalize_counts()` | none | sparse normalization |
+| `cuda_hvg()` | none | sparse feature statistics and ranking |
+| `cuda_cell_pca()` | PCA centring/scaling and decomposition | normalization, HVG selection, selected dense input, and the public PCA model |
+| `cuda_cell_neighbors()` | distance blocks and deterministic top-k selection | input validation and final neighbour matrices |
+| `cudacell_workflow()` | PCA and exact kNN | sparse preprocessing and public R results |
+
+The complete workflow is `hybrid` because normalization and HVG selection are
+CPU stages. Native PCA returns ordinary R scores and loadings and also retains
+a device-side score cache; passing the PCA result directly to
+`cuda_cell_neighbors()` lets kNN reuse that cache without uploading the scores
+again. CUDA neighbour selection is not a fixed CPU stage.
+
+The optional torch compatibility backend can have different stage boundaries.
+Check provenance for the backend actually selected rather than inferring it
+from the requested device.
 
 Inspect the runtime and any result without guessing from its function name:
 
@@ -90,8 +128,8 @@ cuda_provenance(fit)
 The provenance table separates the requested device, actual compute device,
 output device, and an automatic fallback. See
 [Backend provenance and CUDA diagnostics](https://cudaverse.github.io/cudacellr/articles/backend-provenance.html)
-for a runnable CPU workflow, dense-PCA and kNN memory guidance, and the
-hardware-CI gate.
+for a worked CUDA example, a small CPU reference, and dense-PCA/kNN memory
+guidance.
 
 ## Object integration
 
@@ -109,7 +147,7 @@ sce <- cudacell_sce(
   n_components = 20,
   k = 15,
   batch_size = 128,
-  device = "cpu"
+  device = "cuda"
 )
 
 assayNames(sce)
@@ -145,7 +183,7 @@ object <- cudacell_seurat(
   n_components = 20,
   k = 15,
   batch_size = 128,
-  device = "cpu"
+  device = "cuda"
 )
 
 SeuratObject::Assays(object)
