@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cudacellr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -353,7 +353,7 @@ opt-in after checking the expected memory requirement.</p>
 locations, and the same validated <code>cudaverse-stage/1</code> compute
 stages as the matrix workflow:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://cudaverse.github.io/cudaverse/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;cuda_provenance schema=cudaverse-stage/1 stages=6 compute=cpu&gt;</span></span>
 <span><span class="co">#&gt;                   stage requested_device device backend   selection_reason</span></span>
 <span><span class="co">#&gt;           normalization        fixed-cpu    cpu  Matrix algorithm_cpu_only</span></span>
@@ -361,7 +361,7 @@ stages as the matrix workflow:</p>
 <span><span class="co">#&gt;       pca_preprocessing              cpu    cpu   stats       explicit_cpu</span></span>
 <span><span class="co">#&gt;       pca_decomposition              cpu    cpu   stats       explicit_cpu</span></span>
 <span><span class="co">#&gt;            knn_distance              cpu    cpu    base       explicit_cpu</span></span>
-<span><span class="co">#&gt;  knn_neighbor_selection        fixed-cpu    cpu    base algorithm_cpu_only</span></span>
+<span><span class="co">#&gt;  knn_neighbor_selection              cpu    cpu    base       explicit_cpu</span></span>
 <span><span class="co">#&gt;  fallback output_device</span></span>
 <span><span class="co">#&gt;     FALSE           cpu</span></span>
 <span><span class="co">#&gt;     FALSE           cpu</span></span>
@@ -399,7 +399,7 @@ stages as the matrix workflow:</p>
 <p>Per-feature, per-cell, and graph-shaped results do not live in
 top-level metadata because that metadata is not remapped by row or
 column subsetting. For a downstream embedding, pass <code>result</code>
-directly to a compatible <code>cudaembedr</code> function or explicitly
+directly to a compatible <code>cudaverse</code> function or explicitly
 use <code>reducedDim(result, "CUDACELL_PCA")</code>.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

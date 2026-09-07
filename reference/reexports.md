@@ -3,6 +3,6 @@
 These objects are imported from other packages. Follow the links below
 to see their documentation.
 
-- cudatensr:
+- cudaverse:
 
-  [`cuda_provenance()`](https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html)
+  [`cuda_provenance()`](https://cudaverse.github.io/cudaverse/reference/cuda_provenance.html)

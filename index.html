@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>GPU-Aware Single-Cell Analysis Workflows for R • cudacellr</title>
+<title>GPU-Aware Single-Cell Analysis Workflows • cudacellr</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="GPU-Aware Single-Cell Analysis Workflows for R">
-<meta name="description" content="Provides experimental R-native single-cell analysis primitives for sparse count matrices, including library-size normalization, log-normalization, highly variable feature selection, principal component analysis, and nearest-neighbour construction. Integrates the cudaverse sparse and learning layers while preserving R matrix conventions. Optional adapters preserve native SingleCellExperiment and SeuratObject version 5 object structures.">
-<meta property="og:description" content="Provides experimental R-native single-cell analysis primitives for sparse count matrices, including library-size normalization, log-normalization, highly variable feature selection, principal component analysis, and nearest-neighbour construction. Integrates the cudaverse sparse and learning layers while preserving R matrix conventions. Optional adapters preserve native SingleCellExperiment and SeuratObject version 5 object structures.">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="GPU-Aware Single-Cell Analysis Workflows">
+<meta name="description" content="Provides single-cell analysis primitives for sparse count matrices, including library-size normalization, log-normalization, highly variable feature selection, principal component analysis, and nearest-neighbour construction. Integrates the cudaverse numerical and sparse layers while preserving matrix identifiers and recording the computation backend for each stage. Optional adapters preserve native SingleCellExperiment and SeuratObject version 5 object structures.">
+<meta property="og:description" content="Provides single-cell analysis primitives for sparse count matrices, including library-size normalization, log-normalization, highly variable feature selection, principal component analysis, and nearest-neighbour construction. Integrates the cudaverse numerical and sparse layers while preserving matrix identifiers and recording the computation backend for each stage. Optional adapters preserve native SingleCellExperiment and SeuratObject version 5 object structures.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">cudacellr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,7 +50,8 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="cudacellr">cudacellr<a class="anchor" aria-label="anchor" href="#cudacellr"></a>
 </h1></div>
-<p><code>cudacellr</code> is the R-native single-cell workflow layer of the <strong>cudaverse</strong>. It composes sparse count processing with GPU-aware numerical algorithms while keeping features in rows and cells in columns at the public R boundary.</p>
+<p><code>cudacellr</code> takes a single-cell count matrix through normalization, variable feature selection, PCA, and exact nearest neighbours. Use it to accelerate PCA and neighbour search with NVIDIA CUDA while keeping familiar R matrices, cell identifiers, and optional SingleCellExperiment or SeuratObject results.</p>
+<p>The native CUDA backend comes from <strong>cudaverse</strong> and does not require torch or LibTorch. Sparse normalization and feature selection run on the CPU; PCA, distance calculations, and deterministic top-k selection can run on CUDA.</p>
 <div class="section level2">
 <h2 id="current-workflow">Current workflow<a class="anchor" aria-label="anchor" href="#current-workflow"></a>
 </h2>
@@ -58,28 +59,44 @@
 <li>library-size normalization;</li>
 <li>sparse log-normalization;</li>
 <li>highly variable feature selection;</li>
-<li>PCA through <code>cudalearnr</code>;</li>
-<li>k-nearest neighbours through <code>cudalearnr</code>;</li>
+<li>PCA through <code>cudaverse</code>;</li>
+<li>k-nearest neighbours through <code>cudaverse</code>;</li>
 <li>a composable end-to-end workflow result that reuses each preprocessing stage instead of repeating normalization and feature selection.</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
+<p>For CUDA execution, prepare a Windows or Linux machine with an NVIDIA driver, cuBLAS 12, and cuSOLVER 11. Follow the <a href="https://cudaverse.github.io/cudaverse/articles/gpu-setup.html" class="external-link">CUDA setup guide</a> before running the GPU examples. Current CUDA execution is unavailable on macOS; use a Windows or Linux GPU machine for these workflows.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
-<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"cudaverse/cudacellr"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"cudaverse/cudacellr"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cudaverse.github.io/cudacellr/">cudacellr</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">health</span> <span class="op">&lt;-</span> <span class="fu">cudaverse</span><span class="fu">::</span><span class="fu"><a href="https://cudaverse.github.io/cudaverse/reference/cuda_diagnostics.html" class="external-link">cuda_diagnostics</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">health</span><span class="op">$</span><span class="va">summary</span></span>
+<span><span class="va">health</span><span class="op">$</span><span class="va">next_steps</span></span>
+<span><span class="va">health</span><span class="op">$</span><span class="va">selected_backend</span>  <span class="co"># "native" for the lightweight CUDA path</span></span>
+<span><span class="fu">cudaverse</span><span class="fu">::</span><span class="fu"><a href="https://cudaverse.github.io/cudaverse/reference/cuda_select_device.html" class="external-link">cuda_select_device</a></span><span class="op">(</span><span class="st">"cuda"</span><span class="op">)</span></span></code></pre></div>
+<p>An explicit <code>device = "cuda"</code> request fails with diagnostics when CUDA is unavailable; it does not silently run the requested GPU stages on the CPU.</p>
 </div>
 <div class="section level2">
-<h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+<h2 id="a-single-cell-cuda-workflow">A single-cell CUDA workflow<a class="anchor" aria-label="anchor" href="#a-single-cell-cuda-workflow"></a>
 </h2>
+<p>Provide features in rows and cells in columns:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cudaverse.github.io/cudacellr/">cudacellr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://Matrix.R-forge.R-project.org" class="external-link">Matrix</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/Matrix.html" class="external-link">Matrix</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">1000</span> <span class="op">*</span> <span class="fl">300</span>, lambda <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span>, <span class="fl">1000</span>, <span class="fl">300</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fl">1000</span> <span class="op">*</span> <span class="fl">300</span>, lambda <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span>, <span class="fl">1000</span>, <span class="fl">300</span>,</span>
+<span>    dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"gene"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">1000</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"cell"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">300</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
 <span>  sparse <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -88,7 +105,8 @@
 <span>  n_hvg <span class="op">=</span> <span class="fl">300</span>,</span>
 <span>  n_components <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  k <span class="op">=</span> <span class="fl">15</span>,</span>
-<span>  batch_size <span class="op">=</span> <span class="fl">128</span></span>
+<span>  batch_size <span class="op">=</span> <span class="fl">128</span>,</span>
+<span>  device <span class="op">=</span> <span class="st">"cuda"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">fit</span><span class="op">$</span><span class="va">pca</span></span>
@@ -106,58 +124,53 @@
 <div class="section level2">
 <h2 id="backend-provenance">Backend provenance<a class="anchor" aria-label="anchor" href="#backend-provenance"></a>
 </h2>
-<p>Normalization and highly variable feature selection stay sparse and run on the CPU. PCA and kNN distance blocks can use CUDA, while deterministic neighbour selection remains on the CPU:</p>
+<p>With the native backend, the compute boundaries are:</p>
 <table class="table">
 <colgroup>
-<col width="25%">
-<col width="25%">
-<col width="25%">
-<col width="25%">
+<col width="33%">
+<col width="33%">
+<col width="33%">
 </colgroup>
 <thead><tr>
 <th>Function</th>
-<th>Device-selected work</th>
-<th>Always-CPU work</th>
-<th>CUDA aggregate</th>
+<th>Native CUDA work</th>
+<th>CPU work and R outputs</th>
 </tr></thead>
 <tbody>
 <tr>
 <td><code><a href="reference/cuda_normalize_counts.html">cuda_normalize_counts()</a></code></td>
 <td>none</td>
 <td>sparse normalization</td>
-<td><code>cpu</code></td>
 </tr>
 <tr>
 <td><code><a href="reference/cuda_hvg.html">cuda_hvg()</a></code></td>
 <td>none</td>
 <td>sparse feature statistics and ranking</td>
-<td><code>cpu</code></td>
 </tr>
 <tr>
 <td><code><a href="reference/cuda_cell_pca.html">cuda_cell_pca()</a></code></td>
-<td>PCA preprocessing and decomposition</td>
-<td>normalization and HVG selection</td>
-<td><code>hybrid</code></td>
+<td>PCA centring/scaling and decomposition</td>
+<td>normalization, HVG selection, selected dense input, and the public PCA model</td>
 </tr>
 <tr>
 <td><code><a href="reference/cuda_cell_neighbors.html">cuda_cell_neighbors()</a></code></td>
-<td>kNN distance blocks</td>
-<td>neighbour selection</td>
-<td><code>hybrid</code></td>
+<td>distance blocks and deterministic top-k selection</td>
+<td>input validation and final neighbour matrices</td>
 </tr>
 <tr>
 <td><code><a href="reference/cudacell_workflow.html">cudacell_workflow()</a></code></td>
-<td>PCA and kNN distance stages</td>
-<td>sparse preprocessing and neighbour selection</td>
-<td><code>hybrid</code></td>
+<td>PCA and exact kNN</td>
+<td>sparse preprocessing and public R results</td>
 </tr>
 </tbody>
 </table>
+<p>The complete workflow is <code>hybrid</code> because normalization and HVG selection are CPU stages. Native PCA returns ordinary R scores and loadings and also retains a device-side score cache; passing the PCA result directly to <code><a href="reference/cuda_cell_neighbors.html">cuda_cell_neighbors()</a></code> lets kNN reuse that cache without uploading the scores again. CUDA neighbour selection is not a fixed CPU stage.</p>
+<p>The optional torch compatibility backend can have different stage boundaries. Check provenance for the backend actually selected rather than inferring it from the requested device.</p>
 <p>Inspect the runtime and any result without guessing from its function name:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">cudatensr</span><span class="fu">::</span><span class="fu"><a href="https://cudaverse.github.io/cudatensr/reference/cuda_diagnostics.html" class="external-link">cuda_diagnostics</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
-<p>The provenance table separates the requested device, actual compute device, output device, and an automatic fallback. See <a href="https://cudaverse.github.io/cudacellr/articles/backend-provenance.html">Backend provenance and CUDA diagnostics</a> for a runnable CPU workflow, dense-PCA and kNN memory guidance, and the hardware-CI gate.</p>
+<code class="sourceCode R"><span><span class="fu">cudaverse</span><span class="fu">::</span><span class="fu"><a href="https://cudaverse.github.io/cudaverse/reference/cuda_diagnostics.html" class="external-link">cuda_diagnostics</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://cudaverse.github.io/cudaverse/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<p>The provenance table separates the requested device, actual compute device, output device, and an automatic fallback. See <a href="https://cudaverse.github.io/cudacellr/articles/backend-provenance.html">Backend provenance and CUDA diagnostics</a> for a worked CUDA example, a small CPU reference, and dense-PCA/kNN memory guidance.</p>
 </div>
 <div class="section level2">
 <h2 id="object-integration">Object integration<a class="anchor" aria-label="anchor" href="#object-integration"></a>
@@ -173,13 +186,13 @@
 <span>  n_components <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  k <span class="op">=</span> <span class="fl">15</span>,</span>
 <span>  batch_size <span class="op">=</span> <span class="fl">128</span>,</span>
-<span>  device <span class="op">=</span> <span class="st">"cpu"</span></span>
+<span>  device <span class="op">=</span> <span class="st">"cuda"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assayNames</a></span><span class="op">(</span><span class="va">sce</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/SingleCellExperiment/man/reducedDims.html" class="external-link">reducedDimNames</a></span><span class="op">(</span><span class="va">sce</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/SingleCellExperiment/man/colPairs.html" class="external-link">colPairNames</a></span><span class="op">(</span><span class="va">sce</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">sce</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://cudaverse.github.io/cudaverse/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">sce</span><span class="op">)</span></span></code></pre></div>
 <p>The adapter writes natural-log normalized expression to <code>cudacell_logcounts</code>, PCA scores to <code>CUDACELL_PCA</code>, HVG statistics to namespaced <code>rowData</code> columns, and directed kNN relationships to <code>CUDACELL_KNN</code>. Existing assays, metadata, reduced dimensions, alternative experiments, labels, pairings, and size factors remain unchanged.</p>
 <p>Output names are deliberately namespaced and never silently replaced. <code>overwrite = TRUE</code> replaces only the explicitly named cudacellr fields. Delayed assays also remain lazy unless <code>realize = TRUE</code> is requested after checking that the assay fits in memory. See the <a href="https://cudaverse.github.io/cudacellr/articles/single-cell-experiment.html">SingleCellExperiment workflow</a> for the complete object contract.</p>
 <p>Seurat v5 objects have the same non-destructive workflow through <code><a href="reference/cudacell_seurat.html">cudacell_seurat()</a></code>. Only the lightweight <code>SeuratObject</code> package is needed; the full Seurat package is not required:</p>
@@ -193,13 +206,13 @@
 <span>  n_components <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  k <span class="op">=</span> <span class="fl">15</span>,</span>
 <span>  batch_size <span class="op">=</span> <span class="fl">128</span>,</span>
-<span>  device <span class="op">=</span> <span class="st">"cpu"</span></span>
+<span>  device <span class="op">=</span> <span class="st">"cuda"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">SeuratObject</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/ObjectAccess.html" class="external-link">Assays</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
 <span><span class="fu">SeuratObject</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/ObjectAccess.html" class="external-link">Reductions</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
 <span><span class="fu">SeuratObject</span><span class="fu">::</span><span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/ObjectAccess.html" class="external-link">Neighbors</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://cudaverse.github.io/cudaverse/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span></code></pre></div>
 <p>Normalized expression and feature statistics are written to a native <code>Assay5</code>, PCA scores and loadings to a <code>DimReduc</code>, exact neighbour indices and distances to a <code>Neighbor</code>, size factors to cell metadata, and parameters and compute provenance to the <code>cudacell_seurat</code> tool record. Existing assays, layers, reductions, graphs, neighbours, identities, metadata, and tools are preserved.</p>
 <p>All output names and Seurat keys are checked before device selection, realization, or computation. <code>overwrite = TRUE</code> targets only the named cudacellr outputs, and non-memory-backed layers require the explicit <code>realize = TRUE</code> opt-in. See the <a href="https://cudaverse.github.io/cudacellr/articles/seurat-object.html">SeuratObject v5 workflow</a> for the full contract.</p>
 <p>For installation, device verification, memory advice, and common failures, see the cudaverse <a href="https://github.com/cudaverse/.github/blob/main/GPU_SETUP.md" class="external-link">GPU setup and troubleshooting guide</a>.</p>

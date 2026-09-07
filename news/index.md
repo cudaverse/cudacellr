@@ -1,5 +1,22 @@
 # Changelog
 
+## cudacellr 0.4.0
+
+- Normalize very small positive libraries without overflowing an
+  intermediate scale factor, and reject non-finite library totals.
+
+- Reject component and feature counts beyond the supported integer range
+  with an informative error before integer conversion.
+
+- Replaces the former `cudatensr`, `cudasparsr`, and `cudalearnr`
+  dependencies with the unified `cudaverse` package.
+
+- Preserves all existing single-cell workflow and adapter entry points.
+
+- Keeps
+  [`cuda_provenance()`](https://cudaverse.github.io/cudaverse/reference/cuda_provenance.html)
+  as a re-export of the canonical cudaverse generic.
+
 ## cudacellr 0.3.0
 
 - Added
@@ -28,7 +45,7 @@
   unless explicitly replaced with `overwrite = TRUE`.
 - Delayed assays are never materialized silently. `realize = TRUE` is
   required to opt into an in-memory sparse realization.
-- [`cuda_provenance()`](https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html)
+- [`cuda_provenance()`](https://cudaverse.github.io/cudaverse/reference/cuda_provenance.html)
   now dispatches through the shared cudaverse S3 generic and reads the
   ordered computation record directly from `SingleCellExperiment` and
   Seurat objects produced by cudacellr.
@@ -51,7 +68,7 @@
 - Strict CUDA requests are validated before CPU preprocessing begins,
   avoiding expensive work before an unavailable-device error.
 - Re-exported
-  [`cuda_provenance()`](https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html)
+  [`cuda_provenance()`](https://cudaverse.github.io/cudaverse/reference/cuda_provenance.html)
   as the common inspector for single-cell results.
 
 ## cudacellr 0.1.2

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cudacellr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,14 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.0" id="cudacellr-040">cudacellr 0.4.0<a class="anchor" aria-label="anchor" href="#cudacellr-040"></a></h2>
+<ul><li><p>Normalize very small positive libraries without overflowing an intermediate scale factor, and reject non-finite library totals.</p></li>
+<li><p>Reject component and feature counts beyond the supported integer range with an informative error before integer conversion.</p></li>
+<li><p>Replaces the former <code>cudatensr</code>, <code>cudasparsr</code>, and <code>cudalearnr</code> dependencies with the unified <code>cudaverse</code> package.</p></li>
+<li><p>Preserves all existing single-cell workflow and adapter entry points.</p></li>
+<li><p>Keeps <code><a href="https://cudaverse.github.io/cudaverse/reference/cuda_provenance.html" class="external-link">cuda_provenance()</a></code> as a re-export of the canonical cudaverse generic.</p></li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="cudacellr-030">cudacellr 0.3.0<a class="anchor" aria-label="anchor" href="#cudacellr-030"></a></h2>
 <ul><li>Added <code><a href="../reference/cudacell_seurat.html">cudacell_seurat()</a></code> for a native Seurat v5 workflow using only the optional <code>SeuratObject (&gt;= 5.0.0)</code> package. It writes normalized expression and feature statistics to an <code>Assay5</code>, PCA results to a <code>DimReduc</code>, exact kNN results to a <code>Neighbor</code>, size factors to cell metadata, and parameters and compute provenance to a deterministic tool record.</li>
 <li>Seurat output names and keys are checked for cross-type collisions before device selection, layer realization, or computation. Existing object state is preserved, and <code>overwrite = TRUE</code> replaces only explicitly named cudacellr outputs.</li>
@@ -42,7 +50,7 @@
 <li>Existing assays, row and column metadata, reduced dimensions, alternative experiments, pairings, canonical size factors, labels, and user metadata are preserved. Output collisions fail before computation unless explicitly replaced with <code>overwrite = TRUE</code>.</li>
 <li>Delayed assays are never materialized silently. <code>realize = TRUE</code> is required to opt into an in-memory sparse realization.</li>
 <li>
-<code><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance()</a></code> now dispatches through the shared cudaverse S3 generic and reads the ordered computation record directly from <code>SingleCellExperiment</code> and Seurat objects produced by cudacellr.</li>
+<code><a href="https://cudaverse.github.io/cudaverse/reference/cuda_provenance.html" class="external-link">cuda_provenance()</a></code> now dispatches through the shared cudaverse S3 generic and reads the ordered computation record directly from <code>SingleCellExperiment</code> and Seurat objects produced by cudacellr.</li>
 <li>
 <code><a href="../reference/cuda_cell_pca.html">cuda_cell_pca()</a></code> and <code><a href="../reference/cudacell_workflow.html">cudacell_workflow()</a></code> now expose normalization <code>scale_factor</code>, <code>log1p</code>, and <code>min_mean</code> controls; the complete workflow also exposes PCA scaling through <code>scale.</code>.</li>
 </ul></div>
@@ -52,7 +60,7 @@
 <li>
 <code><a href="../reference/cudacell_workflow.html">cudacell_workflow()</a></code> reports its aggregate CPU/CUDA/hybrid compute device, and its print method no longer implies that the PCA device represents the complete workflow.</li>
 <li>Strict CUDA requests are validated before CPU preprocessing begins, avoiding expensive work before an unavailable-device error.</li>
-<li>Re-exported <code><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance()</a></code> as the common inspector for single-cell results.</li>
+<li>Re-exported <code><a href="https://cudaverse.github.io/cudaverse/reference/cuda_provenance.html" class="external-link">cuda_provenance()</a></code> as the common inspector for single-cell results.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.2" id="cudacellr-012">cudacellr 0.1.2<a class="anchor" aria-label="anchor" href="#cudacellr-012"></a></h2>

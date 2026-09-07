@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cudacellr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -274,7 +274,7 @@ never silently falls back to CPU.</p>
 locations, and the same ordered <code>cudaverse-stage/1</code> compute
 provenance used by the matrix and SingleCellExperiment workflows:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://cudaverse.github.io/cudaverse/reference/cuda_provenance.html" class="external-link">cuda_provenance</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
 <span><span class="co">#&gt; &lt;cuda_provenance schema=cudaverse-stage/1 stages=6 compute=cpu&gt;</span></span>
 <span><span class="co">#&gt;                   stage requested_device device backend   selection_reason</span></span>
 <span><span class="co">#&gt;           normalization        fixed-cpu    cpu  Matrix algorithm_cpu_only</span></span>
@@ -282,7 +282,7 @@ provenance used by the matrix and SingleCellExperiment workflows:</p>
 <span><span class="co">#&gt;       pca_preprocessing              cpu    cpu   stats       explicit_cpu</span></span>
 <span><span class="co">#&gt;       pca_decomposition              cpu    cpu   stats       explicit_cpu</span></span>
 <span><span class="co">#&gt;            knn_distance              cpu    cpu    base       explicit_cpu</span></span>
-<span><span class="co">#&gt;  knn_neighbor_selection        fixed-cpu    cpu    base algorithm_cpu_only</span></span>
+<span><span class="co">#&gt;  knn_neighbor_selection              cpu    cpu    base       explicit_cpu</span></span>
 <span><span class="co">#&gt;  fallback output_device</span></span>
 <span><span class="co">#&gt;     FALSE           cpu</span></span>
 <span><span class="co">#&gt;     FALSE           cpu</span></span>

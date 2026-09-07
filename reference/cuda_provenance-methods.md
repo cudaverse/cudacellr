@@ -1,7 +1,7 @@
 # Inspect provenance stored on native single-cell containers
 
 These methods expose the shared
-[`cudatensr::cuda_provenance()`](https://cudaverse.github.io/cudatensr/reference/cuda_provenance.html)
+[`cudaverse::cuda_provenance()`](https://cudaverse.github.io/cudaverse/reference/cuda_provenance.html)
 contract for `SingleCellExperiment` and `Seurat` objects produced by
 `cudacellr`.
 

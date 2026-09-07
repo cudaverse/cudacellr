@@ -38,7 +38,7 @@ cuda_cell_pca(
 - device:
 
   Device passed to
-  [`cudalearnr::cuda_pca()`](https://cudaverse.github.io/cudalearnr/reference/cuda_pca.html).
+  [`cudaverse::cuda_pca()`](https://cudaverse.github.io/cudaverse/reference/cuda_pca.html).
 
 - scale_factor:
 

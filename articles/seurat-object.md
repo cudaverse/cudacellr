@@ -243,7 +243,7 @@ cuda_provenance(result)
 #>       pca_preprocessing              cpu    cpu   stats       explicit_cpu
 #>       pca_decomposition              cpu    cpu   stats       explicit_cpu
 #>            knn_distance              cpu    cpu    base       explicit_cpu
-#>  knn_neighbor_selection        fixed-cpu    cpu    base algorithm_cpu_only
+#>  knn_neighbor_selection              cpu    cpu    base       explicit_cpu
 #>  fallback output_device
 #>     FALSE           cpu
 #>     FALSE           cpu

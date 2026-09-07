@@ -322,7 +322,7 @@ cuda_provenance(result)
 #>       pca_preprocessing              cpu    cpu   stats       explicit_cpu
 #>       pca_decomposition              cpu    cpu   stats       explicit_cpu
 #>            knn_distance              cpu    cpu    base       explicit_cpu
-#>  knn_neighbor_selection        fixed-cpu    cpu    base algorithm_cpu_only
+#>  knn_neighbor_selection              cpu    cpu    base       explicit_cpu
 #>  fallback output_device
 #>     FALSE           cpu
 #>     FALSE           cpu
@@ -362,5 +362,5 @@ metadata(result)$cudacellr$parameters
 Per-feature, per-cell, and graph-shaped results do not live in top-level
 metadata because that metadata is not remapped by row or column
 subsetting. For a downstream embedding, pass `result` directly to a
-compatible `cudaembedr` function or explicitly use
+compatible `cudaverse` function or explicitly use
 `reducedDim(result, "CUDACELL_PCA")`.
