@@ -17,6 +17,23 @@ test_that("normalization preserves sparse shape and library scaling", {
   expect_equal(as.numeric(Matrix::colSums(normalized)), rep(1000, 20))
 })
 
+test_that("normalization handles small libraries without intermediate overflow", {
+  counts <- matrix(c(1e-310, 2e-310, 3e-310, 1e-310), 2)
+  result <- cuda_normalize_counts(counts, scale_factor = 10000, log1p = FALSE)
+  expect_true(all(is.finite(result@x)))
+  expect_equal(as.numeric(Matrix::colSums(result)), c(10000, 10000))
+  expect_equal(as.matrix(result)[, 2], c(7500, 2500))
+  expect_error(cuda_normalize_counts(matrix(1e308, 2, 2)), "finite")
+})
+
+test_that("oversized feature and component counts fail without coercion warnings", {
+  counts <- example_counts()
+  for (fun in list(cuda_cell_pca, cudacell_workflow)) {
+    expect_error(fun(counts, n_hvg = 2^31, device = "cpu"), "positive whole")
+    expect_error(fun(counts, n_components = 2^31, device = "cpu"), "positive whole")
+  }
+})
+
 test_that("HVG selection returns ranked feature statistics", {
   hvg <- cuda_hvg(example_counts(), n_top = 8)
 
