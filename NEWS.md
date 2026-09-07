@@ -1,5 +1,10 @@
 # cudacellr 0.4.0
 
+- Normalize very small positive libraries without overflowing an intermediate
+  scale factor, and reject non-finite library totals.
+- Reject component and feature counts beyond the supported integer range with
+  an informative error before integer conversion.
+
 - Replaces the former `cudatensr`, `cudasparsr`, and `cudalearnr`
   dependencies with the unified `cudaverse` package.
 - Preserves all existing single-cell workflow and adapter entry points.

@@ -1,15 +1,15 @@
 Package: cudacellr
-Title: GPU-Aware Single-Cell Analysis Workflows for R
+Title: GPU-Aware Single-Cell Analysis Workflows
 Version: 0.4.0
 Authors@R:
     person("Yaoxiang", "Li", email = "liyaoxiang@outlook.com",
            role = c("aut", "cre"))
-Description: Provides experimental R-native single-cell analysis primitives
+Description: Provides single-cell analysis primitives
     for sparse count matrices, including library-size normalization,
     log-normalization, highly variable feature selection, principal component
     analysis, and nearest-neighbour construction. Integrates the 'cudaverse'
-    numerical and sparse layers from 'cudaverse' while preserving R matrix
-    conventions.
+    numerical and sparse layers while preserving matrix identifiers and
+    recording the computation backend for each stage.
     Optional adapters preserve native 'SingleCellExperiment' and
     'SeuratObject' version 5 object structures.
 License: MIT + file LICENSE

@@ -159,13 +159,13 @@ cuda_normalize_counts <- function(counts, scale_factor = 10000,
     stop("`log1p` must be TRUE or FALSE.", call. = FALSE)
   }
   library_size <- as.numeric(Matrix::colSums(counts))
-  if (any(library_size == 0)) {
-    stop("Every cell must have a positive library size.", call. = FALSE)
+  if (any(!is.finite(library_size)) || any(library_size <= 0)) {
+    stop("Every cell must have a positive library size that is finite.",
+         call. = FALSE)
   }
-  normalized <- counts %*% Matrix::Diagonal(
-    x = scale_factor / library_size
-  )
-  normalized <- methods::as(normalized, "dgCMatrix")
+  normalized <- counts
+  column_index <- rep.int(seq_len(ncol(counts)), diff(counts@p))
+  normalized@x <- (counts@x / library_size[column_index]) * scale_factor
   dimnames(normalized) <- dimnames(counts)
   if (log1p) {
     normalized@x <- base::log1p(normalized@x)
@@ -244,7 +244,8 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
 .cell_n_components <- function(n_components) {
   if (!is.numeric(n_components) || length(n_components) != 1L ||
       is.na(n_components) || !is.finite(n_components) ||
-      n_components < 1 || n_components != as.integer(n_components)) {
+      n_components < 1 || n_components > .Machine$integer.max ||
+      n_components != floor(n_components)) {
     stop("`n_components` must be a positive whole number.", call. = FALSE)
   }
   as.integer(n_components)
@@ -313,7 +314,8 @@ cuda_cell_pca <- function(counts, n_components = 30L, n_hvg = 2000L,
   input_stages <- .cell_input_stages(counts)
   counts <- .cell_counts(counts)
   if (!is.numeric(n_hvg) || length(n_hvg) != 1L || is.na(n_hvg) ||
-      !is.finite(n_hvg) || n_hvg < 1 || n_hvg != as.integer(n_hvg)) {
+      !is.finite(n_hvg) || n_hvg < 1 || n_hvg > .Machine$integer.max ||
+      n_hvg != floor(n_hvg)) {
     stop("`n_hvg` must be a positive whole number.", call. = FALSE)
   }
   n_hvg <- min(as.integer(n_hvg), nrow(counts))
@@ -423,7 +425,8 @@ cudacell_workflow <- function(counts, n_hvg = 2000L,
   input_stages <- .cell_input_stages(counts)
   counts <- .cell_counts(counts)
   if (!is.numeric(n_hvg) || length(n_hvg) != 1L || is.na(n_hvg) ||
-      !is.finite(n_hvg) || n_hvg < 1 || n_hvg != as.integer(n_hvg)) {
+      !is.finite(n_hvg) || n_hvg < 1 || n_hvg > .Machine$integer.max ||
+      n_hvg != floor(n_hvg)) {
     stop("`n_hvg` must be a positive whole number.", call. = FALSE)
   }
   n_components <- .cell_n_components(n_components)
