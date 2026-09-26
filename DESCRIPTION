@@ -19,11 +19,9 @@ BugReports: https://github.com/cudaverse/cudacellr/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Imports:
-    cudaverse (>= 0.1.0),
+    cudaverse (>= 0.4.1),
     Matrix,
     methods
-Remotes:
-    cudaverse/cudaverse
 Suggests:
     DelayedArray,
     knitr,
