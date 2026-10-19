@@ -14,7 +14,7 @@ unset NVIDIA_TF32_OVERRIDE
 dependencies=/home/exouser/cudaverse-validation-20261010/lib
 export R_LIBS_USER="$root/library:$dependencies"
 cd "$root/source"
-sha256sum tools/performance*.R tools/compare-performance.R "$0" > "$output/scripts.sha256"
+sha256sum tools/performance*.R tools/compare-performance.R tools/run-performance.sh > "$output/scripts.sha256"
 nvidia-smi -q -x > "$output/gpu-at-start.xml"
 for case in legacy_1000 legacy_10000 legacy_50000 sparse_50000 pbmc_10k_v3; do
   for variant in baseline candidate; do
