@@ -3,7 +3,8 @@
 - Native CUDA PCA preparation preserves selected counts as a sparse matrix
   through upload, avoiding the dense host matrix and its transposed copy.
   PCA still uses float64 dense working storage on the GPU. CPU and torch
-  preparation and public return objects are unchanged.
+  preparation and public return objects are unchanged. Inputs smaller than
+  1 MiB retain the dense path to avoid sparse setup overhead.
 - Invalid PCA component counts are rejected before preparing the selected
   input matrix. The development version requires cudaverse 0.4.2.
 

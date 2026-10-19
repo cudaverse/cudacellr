@@ -252,9 +252,12 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
 }
 
 .cell_pca_input <- function(normalized, feature_index, features, device) {
-  selection <- cudaverse::cuda_select_device(device)
   selected <- normalized[feature_index, , drop = FALSE]
-  if (identical(selection$device, "cuda") &&
+  # Sparse setup costs outweigh avoiding a sub-MiB dense matrix. Keep the
+  # established path for these small inputs, including its device selection.
+  large_input <- as.double(ncol(normalized)) * length(feature_index) * 8 >= 1024^2
+  selection <- if (large_input) cudaverse::cuda_select_device(device) else NULL
+  if (large_input && identical(selection$device, "cuda") &&
       identical(selection$backend, "native")) {
     sparse <- Matrix::t(selected)
     dimnames(sparse) <- list(colnames(normalized), features)

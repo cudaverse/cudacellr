@@ -2,6 +2,7 @@
 set -euo pipefail
 root="${1:?benchmark root}"
 output="${2:?new output directory}"
+baseline_reports="${3:-}"
 [[ ! -e "$output" ]] || { echo 'Refusing to overwrite evidence'; exit 1; }
 mkdir -p "$output"
 trap 'echo $? > "$output/exit-status.txt"; date -u +%FT%TZ > "$output/finished-at.txt"' EXIT
@@ -12,16 +13,31 @@ export CUDAVERSE_CUBLAS_PATH=/lib/x86_64-linux-gnu/libcublas.so.12
 export CUDAVERSE_CUSOLVER_PATH=/lib/x86_64-linux-gnu/libcusolver.so.11
 unset NVIDIA_TF32_OVERRIDE
 dependencies=/home/exouser/cudaverse-validation-20261010/lib
-export R_LIBS_USER="$root/library:$dependencies"
-cd "$root/source"
+candidate_library="${CUDACELLR_CANDIDATE_LIBRARY:-$root/library}"
+export R_LIBS_USER="$candidate_library:$root/library:$dependencies"
+cd "${CUDACELLR_BENCHMARK_SOURCE:-$root/source}"
 sha256sum tools/performance*.R tools/compare-performance.R tools/run-performance.sh > "$output/scripts.sha256"
+if [[ -n "$baseline_reports" ]]; then
+  # Reuse unchanged baseline measurements without overwriting their evidence.
+  realpath "$baseline_reports" > "$output/baseline-evidence-source.txt"
+  for case in legacy_1000 legacy_10000 legacy_50000 sparse_50000 pbmc_10k_v3; do
+    for mode in timing profile; do
+      for suffix in json log; do
+        cp "$baseline_reports/$case-baseline-$mode.$suffix" "$output/"
+      done
+    done
+    cp "$baseline_reports/$case-baseline-timing.json.result.rds" "$output/"
+  done
+  sha256sum "$output"/*-baseline-* > "$output/reused-baseline.sha256"
+fi
 nvidia-smi -q -x > "$output/gpu-at-start.xml"
 for case in legacy_1000 legacy_10000 legacy_50000 sparse_50000 pbmc_10k_v3; do
   for variant in baseline candidate; do
+    [[ "$variant" != baseline || -z "$baseline_reports" ]] || continue
     if [[ "$variant" == baseline ]]; then
       export R_LIBS_USER="$root/baseline-library:$root/library:$dependencies"
     else
-      export R_LIBS_USER="$root/library:$dependencies"
+      export R_LIBS_USER="$candidate_library:$root/library:$dependencies"
     fi
     for mode in timing profile; do
       echo "$case $variant $mode" > "$output/stage.txt"

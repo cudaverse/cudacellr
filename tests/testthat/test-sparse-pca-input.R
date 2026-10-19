@@ -1,12 +1,13 @@
-.sparse_pca_counts <- function() {
+.sparse_pca_counts <- function(features = 30L, cells = 20L) {
   set.seed(1)
-  x <- matrix(rpois(30 * 20, lambda = 2), 30, 20,
-              dimnames = list(paste0("gene", 1:30), paste0("cell", 1:20)))
+  x <- matrix(rpois(features * cells, lambda = 2), features, cells,
+              dimnames = list(paste0("gene", seq_len(features)),
+                              paste0("cell", seq_len(cells))))
   Matrix::Matrix(x, sparse = TRUE)
 }
 
 test_that("native preparation preserves sparse feature positions and names", {
-  counts <- .sparse_pca_counts()
+  counts <- .sparse_pca_counts(cells = 40000L)
   rownames(counts)[1:2] <- "duplicate"
   normalized <- cuda_normalize_counts(counts)
   indices <- c(2L, 5L, 1L, 8L)
@@ -30,9 +31,20 @@ test_that("native preparation preserves sparse feature positions and names", {
 })
 
 test_that("torch preparation retains the dense contract", {
-  normalized <- cuda_normalize_counts(.sparse_pca_counts())
+  normalized <- cuda_normalize_counts(.sparse_pca_counts(cells = 40000L))
   testthat::local_mocked_bindings(
     cuda_select_device = function(...) list(device = "cuda", backend = "torch"),
+    .package = "cudaverse"
+  )
+  input <- .cell_pca_input(normalized, 1:4, rownames(normalized)[1:4], "cuda")
+  expect_true(is.matrix(input))
+  expect_equal(input, t(as.matrix(normalized[1:4, ])))
+})
+
+test_that("small PCA inputs retain the dense path without extra detection", {
+  normalized <- cuda_normalize_counts(.sparse_pca_counts())
+  testthat::local_mocked_bindings(
+    cuda_select_device = function(...) stop("Unexpected device probe"),
     .package = "cudaverse"
   )
   input <- .cell_pca_input(normalized, 1:4, rownames(normalized)[1:4], "cuda")
@@ -63,11 +75,11 @@ test_that("native sparse preparation preserves PCA, ties and score reuse", {
   } else {
     skip_if_not(available, "Native CUDA hardware unavailable")
   }
-  counts <- .sparse_pca_counts()
+  counts <- .sparse_pca_counts(features = 100L, cells = 2048L)
   counts[, 2] <- counts[, 1]
   rownames(counts)[1:2] <- "duplicate"
   normalized <- cuda_normalize_counts(counts)
-  variable <- cuda_hvg(normalized, n_top = 10)
+  variable <- cuda_hvg(normalized, n_top = 80)
   selected <- variable[variable$selected, , drop = FALSE]
   for (scaled in c(FALSE, TRUE)) {
     reference <- cudaverse::cuda_pca(

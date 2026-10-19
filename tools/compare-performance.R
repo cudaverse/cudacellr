@@ -26,6 +26,9 @@ for (id in cases) {
     projector = close(tcrossprod(b$rotation), tcrossprod(a$rotation), 0, 1e-8),
     reconstruction = recon, neighbors = identical(a$index, b$index),
     distances = close(b$distance, a$distance),
+    same_environment = identical(x$host, y$host) && identical(x$r_version, y$r_version) &&
+      identical(x$core_version, y$core_version) && identical(x$case, y$case) &&
+      identical(x$input_sha256, y$input_sha256),
     protocol = x$warmups == 5 && y$warmups == 5 && x$samples == 10 && y$samples == 10,
     cleanup = x$gpu_after$allocated_bytes == x$gpu_before$allocated_bytes &&
       y$gpu_after$allocated_bytes == y$gpu_before$allocated_bytes)

@@ -77,7 +77,7 @@ if (mode == "timing") {
   provenance <- as.data.frame(cudaverse::cuda_provenance(neighbors))
   transfer <- list(input_representation = class(input)[1],
     host_pca_input_bytes = as.numeric(object.size(input)),
-    payload_estimate_bytes = if (variant == "candidate")
+    payload_estimate_bytes = if (inherits(input, "cudasparse"))
       length(input$values) * 8 + length(input$col_index) * 4 + length(input$row_ptr) * 4 else
       length(input) * 8,
     estimate_scope = "Input numeric/CSR payload estimate; not measured driver traffic",

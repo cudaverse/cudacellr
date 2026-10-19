@@ -115,7 +115,8 @@ a device-side score cache; passing the PCA result directly to
 again. CUDA neighbour selection is not a fixed CPU stage.
 
 The development version prepares selected features as a sparse matrix for
-native CUDA PCA, avoiding dense host input copies. Dense float64 working
+native CUDA PCA when dense input would occupy at least 1 MiB, avoiding dense
+host input copies. Smaller inputs retain the existing dense path. Dense float64 working
 storage is still required on the GPU: one selected matrix uses approximately
 `8 * cells * n_hvg` bytes before additional PCA workspace. CPU and torch
 preparation retain their existing dense host inputs.

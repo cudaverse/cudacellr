@@ -192,7 +192,8 @@ help distinguish missing runtime libraries from a failed device self-test.
 Normalization and HVG calculations retain sparse `Matrix` storage. In the
 development version, native CUDA PCA also keeps the selected `n_hvg` rows
 sparse through upload; the dense cell-by-feature input is created on the GPU.
-CPU and torch paths still prepare dense host input. One double-precision
+Inputs smaller than 1 MiB retain the existing dense path to avoid sparse setup
+overhead. CPU and torch paths still prepare dense host input. One double-precision
 dense copy uses roughly `8 * cells * n_hvg` bytes; centring, scaling and
 decomposition require additional workspace. Lower `n_hvg` when dense GPU
 working memory is the constraint: reducing `n_components` alone does not make

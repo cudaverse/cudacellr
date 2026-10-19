@@ -34,3 +34,10 @@ The larger sparse fixture must reduce total process peak RSS by at least 25%.
 Each case must have candidate/baseline median runtime at most 1.10. A failed
 gate keeps the optimization unmerged. Review shared-GPU observations before
 using the measured comparison for integration.
+
+When only the candidate changes, an optional third driver argument names a
+completed baseline report directory. The driver copies and hashes those
+unchanged baseline results, then measures the new candidate. The comparison
+also requires matching host, R/core versions, input hashes and parameters.
+`CUDACELLR_CANDIDATE_LIBRARY` and `CUDACELLR_BENCHMARK_SOURCE` can point at
+separate installations and source exports, preserving earlier attempts.
