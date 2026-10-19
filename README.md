@@ -104,7 +104,7 @@ With the native backend, the compute boundaries are:
 |---|---|---|
 | `cuda_normalize_counts()` | none | sparse normalization |
 | `cuda_hvg()` | none | sparse feature statistics and ranking |
-| `cuda_cell_pca()` | PCA centring/scaling and decomposition | normalization, HVG selection, selected dense input, and the public PCA model |
+| `cuda_cell_pca()` | sparse-to-dense conversion, PCA centring/scaling and decomposition | normalization, HVG selection, selected sparse input, and the public PCA model |
 | `cuda_cell_neighbors()` | distance blocks and deterministic top-k selection | input validation and final neighbour matrices |
 | `cudacell_workflow()` | PCA and exact kNN | sparse preprocessing and public R results |
 
@@ -113,6 +113,12 @@ CPU stages. Native PCA returns ordinary R scores and loadings and also retains
 a device-side score cache; passing the PCA result directly to
 `cuda_cell_neighbors()` lets kNN reuse that cache without uploading the scores
 again. CUDA neighbour selection is not a fixed CPU stage.
+
+The development version prepares selected features as a sparse matrix for
+native CUDA PCA, avoiding dense host input copies. Dense float64 working
+storage is still required on the GPU: one selected matrix uses approximately
+`8 * cells * n_hvg` bytes before additional PCA workspace. CPU and torch
+preparation retain their existing dense host inputs.
 
 The optional torch compatibility backend can have different stage boundaries.
 Check provenance for the backend actually selected rather than inferring it
