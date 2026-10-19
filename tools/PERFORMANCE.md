@@ -41,3 +41,11 @@ unchanged baseline results, then measures the new candidate. The comparison
 also requires matching host, R/core versions, input hashes and parameters.
 `CUDACELLR_CANDIDATE_LIBRARY` and `CUDACELLR_BENCHMARK_SOURCE` can point at
 separate installations and source exports, preserving earlier attempts.
+
+`trace-transfers.sh ROOT NEW_TRACE_DIRECTORY` runs separate Nsight Systems
+CUDA traces for the large sparse and PBMC workflows. It retains raw traces,
+GPU memory operation bytes/time, API calls and kernel summaries. These cover
+the complete profile process, including capability probes and result copies;
+they are additional diagnostics, excluded from the elapsed-time gate. The
+report names in the script target Nsight Systems 2022.4.2. Run it after timed
+measurements finish, so profiler overhead cannot affect those measurements.
