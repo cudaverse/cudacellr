@@ -1,0 +1,76 @@
+{
+  "schema": "cudacellr-performance-inputs/1",
+  "pbmc": {
+    "url": "https://cf.10xgenomics.com/samples/cell-exp/3.0.0/pbmc_10k_v3/pbmc_10k_v3_filtered_feature_bc_matrix.tar.gz",
+    "sha256": "060af9e4370c6ad877e2987cf8cdc63a6d5c84e57875580f2be6c8e90748cf63",
+    "license": "CC BY 4.0",
+    "attribution": "10x Genomics"
+  },
+  "cases": [
+    {
+      "id": "legacy_1000",
+      "file": "legacy_1000.rds",
+      "sha256": "5e474cb57704f2efa5ed3c4eb88a616941116057fbf27aa07d55cbdcf39ea830",
+      "cells": 1000,
+      "features": 50,
+      "nnz": 13744,
+      "seed": 1,
+      "hvg": 40,
+      "components": 30,
+      "k": 15,
+      "batch_size": 256
+    },
+    {
+      "id": "legacy_10000",
+      "file": "legacy_10000.rds",
+      "sha256": "6e4aa5eb76616513a7d4087523fd43cbf783e4dd1465b835d66b04d44b49215c",
+      "cells": 10000,
+      "features": 100,
+      "nnz": 266865,
+      "seed": 42,
+      "hvg": 80,
+      "components": 30,
+      "k": 15,
+      "batch_size": 256
+    },
+    {
+      "id": "legacy_50000",
+      "file": "legacy_50000.rds",
+      "sha256": "c34b7681fbdc5bcf938005de2888c8bfad362f2f5c74de24861d4303225bf592",
+      "cells": 50000,
+      "features": 128,
+      "nnz": 1695683,
+      "seed": 2026,
+      "hvg": 102,
+      "components": 30,
+      "k": 15,
+      "batch_size": 256
+    },
+    {
+      "id": "sparse_50000",
+      "file": "sparse_50000.rds",
+      "sha256": "dcf0ad7ad17461ea7587b6f1a360748bf0b07533c84a31a495208322fa3a2831",
+      "cells": 50000,
+      "features": 10000,
+      "nnz": 2549762,
+      "seed": 20261019,
+      "hvg": 2000,
+      "components": 50,
+      "k": 15,
+      "batch_size": 256
+    },
+    {
+      "id": "pbmc_10k_v3",
+      "file": "pbmc_10k_v3.rds",
+      "sha256": "202ab73eb0451c0592f49da129cbab81cbd2eebdcacd228565af0e60bedbfea1",
+      "cells": 11769,
+      "features": 33538,
+      "nnz": 24825783,
+      "seed": "NA",
+      "hvg": 2000,
+      "components": 50,
+      "k": 15,
+      "batch_size": 256
+    }
+  ]
+}

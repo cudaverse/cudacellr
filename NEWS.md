@@ -1,3 +1,16 @@
+# cudacellr 0.4.0.9000
+
+- Native CUDA PCA preparation preserves selected counts as a sparse matrix
+  through upload, avoiding the dense host matrix and its transposed copy.
+  PCA still uses float64 dense working storage on the GPU. CPU and torch
+  preparation and public return objects are unchanged. Inputs smaller than
+  1 MiB retain the dense path to avoid sparse setup overhead.
+- Invalid PCA component counts are rejected before preparing the selected
+  input matrix. The development version requires cudaverse 0.4.2.
+- Added pinned synthetic/PBMC benchmarks, numerical and performance gates,
+  CUDA transfer traces, and a measured performance/memory guide. The validated
+  sparse 50,000-cell case reduced peak host memory by 80.9%; PBMC by 25.1%.
+
 # cudacellr 0.4.0
 
 - Normalize very small positive libraries without overflowing an intermediate

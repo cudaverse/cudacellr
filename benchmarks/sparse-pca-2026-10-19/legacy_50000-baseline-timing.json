@@ -1,0 +1,314 @@
+{
+  "schema": "cudacellr-performance/1",
+  "complete": true,
+  "case": {
+    "id": "legacy_50000",
+    "file": "legacy_50000.rds",
+    "sha256": "c34b7681fbdc5bcf938005de2888c8bfad362f2f5c74de24861d4303225bf592",
+    "cells": 50000,
+    "features": 128,
+    "nnz": 1695683,
+    "seed": 2026,
+    "hvg": 102,
+    "components": 30,
+    "k": 15,
+    "batch_size": 256
+  },
+  "variant": "baseline",
+  "mode": "timing",
+  "r_version": "R version 4.3.3 (2024-02-29)",
+  "package_version": "0.4.0",
+  "core_version": "0.4.2",
+  "host": "shared-a100-validation-host",
+  "input_sha256": "c34b7681fbdc5bcf938005de2888c8bfad362f2f5c74de24861d4303225bf592",
+  "elapsed_seconds": [
+    1.389,
+    1.388,
+    1.489,
+    1.37,
+    1.398,
+    1.407,
+    1.386,
+    1.399,
+    1.39,
+    1.419
+  ],
+  "warmups": 5,
+  "samples": 10,
+  "stages": [],
+  "host_peak_rss_bytes": 749617152,
+  "host_rss_before_bytes": 449925120,
+  "gpu_before": {
+    "requested_device": "cuda",
+    "device": "cuda",
+    "backend": "native",
+    "selection_reason": "explicit_cuda",
+    "fallback": false,
+    "available": true,
+    "total_bytes": 42405855232,
+    "free_bytes": 41906405376,
+    "used_bytes": 499449856,
+    "allocated_bytes": 0,
+    "allocated_peak_bytes": 1838976,
+    "reserved_bytes": null,
+    "reserved_peak_bytes": null,
+    "reason": "native_driver_reported",
+    "error": {}
+  },
+  "gpu_peak": {
+    "requested_device": "cuda",
+    "device": "cuda",
+    "backend": "native",
+    "selection_reason": "explicit_cuda",
+    "fallback": false,
+    "available": true,
+    "total_bytes": 42405855232,
+    "free_bytes": 41893822464,
+    "used_bytes": 512032768,
+    "allocated_bytes": 12000000,
+    "allocated_peak_bytes": 328443644,
+    "reserved_bytes": null,
+    "reserved_peak_bytes": null,
+    "reason": "native_driver_reported",
+    "error": {}
+  },
+  "gpu_after": {
+    "requested_device": "cuda",
+    "device": "cuda",
+    "backend": "native",
+    "selection_reason": "explicit_cuda",
+    "fallback": false,
+    "available": true,
+    "total_bytes": 42405855232,
+    "free_bytes": 41906405376,
+    "used_bytes": 499449856,
+    "allocated_bytes": 0,
+    "allocated_peak_bytes": 328443644,
+    "reserved_bytes": null,
+    "reserved_peak_bytes": null,
+    "reason": "native_driver_reported",
+    "error": {}
+  },
+  "gpu_observations": [
+    {
+      "time": "2026-10-19 16:11:23 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 460,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:25 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 472,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:25 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 460,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:26 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 472,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:27 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 460,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:28 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 472,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:28 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 460,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:30 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 472,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:30 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 460,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:31 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 472,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:31 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 460,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:33 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 472,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:33 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 460,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:34 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 472,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:34 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 460,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:36 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 472,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:36 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 460,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:37 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 472,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:38 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 460,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    },
+    {
+      "time": "2026-10-19 16:11:39 UTC",
+      "status": 0,
+      "benchmark_gpu_mib": 472,
+      "other_compute_process_count": 0,
+      "other_compute_gpu_mib": 0
+    }
+  ],
+  "provenance": [
+    {
+      "stage": "normalization",
+      "requested_device": "fixed-cpu",
+      "device": "cpu",
+      "backend": "Matrix",
+      "selection_reason": "algorithm_cpu_only",
+      "fallback": false,
+      "output_device": "cpu"
+    },
+    {
+      "stage": "hvg",
+      "requested_device": "fixed-cpu",
+      "device": "cpu",
+      "backend": "Matrix",
+      "selection_reason": "algorithm_cpu_only",
+      "fallback": false,
+      "output_device": "cpu"
+    },
+    {
+      "stage": "pca_preprocessing",
+      "requested_device": "cuda",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "explicit_cuda",
+      "fallback": false,
+      "output_device": "cuda"
+    },
+    {
+      "stage": "pca_decomposition",
+      "requested_device": "cuda",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "explicit_cuda",
+      "fallback": false,
+      "output_device": "cpu"
+    },
+    {
+      "stage": "pca_scores_resident",
+      "requested_device": "cuda",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "device_resident_output",
+      "fallback": false,
+      "output_device": "cuda"
+    },
+    {
+      "stage": "knn_input_materialization",
+      "requested_device": "inherited",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "device_resident_input",
+      "fallback": false,
+      "output_device": "cuda"
+    },
+    {
+      "stage": "knn_distance",
+      "requested_device": "cuda",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "explicit_cuda",
+      "fallback": false,
+      "output_device": "cuda"
+    },
+    {
+      "stage": "knn_neighbor_selection",
+      "requested_device": "cuda",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "explicit_cuda",
+      "fallback": false,
+      "output_device": "cpu"
+    }
+  ],
+  "transfers": {},
+  "timing_scope": "Synchronized public workflow call; GC and GPU process queries outside timing",
+  "host_memory_scope": "Linux process VmHWM, including R/runtime/input/results; separate fresh process per variant and mode",
+  "shared_gpu": true,
+  "source_report_sha256": "8c4bece1ff7343072f3d7d17bc02ed8f3b953c9bf73933952c1b0ee88048cf61",
+  "publication_note": "Public derivative: host label and process identities removed. GPU process observations retain counts and memory totals. Original retained separately."
+}

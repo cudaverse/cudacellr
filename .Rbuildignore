@@ -1,5 +1,9 @@
 ^\.github$
+^\.git$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^README\.Rmd$
 ^_pkgdown\.yml$
+^tools$
+^benchmarks$
+^\.gitattributes$

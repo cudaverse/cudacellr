@@ -1,0 +1,283 @@
+{
+  "schema": "cudacellr-performance/1",
+  "complete": true,
+  "case": {
+    "id": "pbmc_10k_v3",
+    "file": "pbmc_10k_v3.rds",
+    "sha256": "202ab73eb0451c0592f49da129cbab81cbd2eebdcacd228565af0e60bedbfea1",
+    "cells": 11769,
+    "features": 33538,
+    "nnz": 24825783,
+    "seed": "NA",
+    "hvg": 2000,
+    "components": 50,
+    "k": 15,
+    "batch_size": 256
+  },
+  "variant": "candidate",
+  "mode": "profile",
+  "r_version": "R version 4.3.3 (2024-02-29)",
+  "package_version": "0.4.0.9000",
+  "core_version": "0.4.2",
+  "host": "shared-a100-validation-host",
+  "input_sha256": "202ab73eb0451c0592f49da129cbab81cbd2eebdcacd228565af0e60bedbfea1",
+  "elapsed_seconds": [],
+  "warmups": 0,
+  "samples": 0,
+  "stages": {
+    "normalization": {
+      "elapsed": 1.811,
+      "host_rss_bytes": 1210331136,
+      "gpu": {
+        "requested_device": "cuda",
+        "device": "cuda",
+        "backend": "native",
+        "selection_reason": "explicit_cuda",
+        "fallback": false,
+        "available": true,
+        "total_bytes": 42405855232,
+        "free_bytes": 41906405376,
+        "used_bytes": 499449856,
+        "allocated_bytes": 0,
+        "allocated_peak_bytes": 1838976,
+        "reserved_bytes": null,
+        "reserved_peak_bytes": null,
+        "reason": "native_driver_reported",
+        "error": {}
+      }
+    },
+    "feature_selection": {
+      "elapsed": 0.785,
+      "host_rss_bytes": 1413660672,
+      "gpu": {
+        "requested_device": "cuda",
+        "device": "cuda",
+        "backend": "native",
+        "selection_reason": "explicit_cuda",
+        "fallback": false,
+        "available": true,
+        "total_bytes": 42405855232,
+        "free_bytes": 41906405376,
+        "used_bytes": 499449856,
+        "allocated_bytes": 0,
+        "allocated_peak_bytes": 1838976,
+        "reserved_bytes": null,
+        "reserved_peak_bytes": null,
+        "reason": "native_driver_reported",
+        "error": {}
+      }
+    },
+    "pca_preparation": {
+      "elapsed": 0.207,
+      "host_rss_bytes": 1455927296,
+      "gpu": {
+        "requested_device": "cuda",
+        "device": "cuda",
+        "backend": "native",
+        "selection_reason": "explicit_cuda",
+        "fallback": false,
+        "available": true,
+        "total_bytes": 42405855232,
+        "free_bytes": 41906405376,
+        "used_bytes": 499449856,
+        "allocated_bytes": 0,
+        "allocated_peak_bytes": 1838976,
+        "reserved_bytes": null,
+        "reserved_peak_bytes": null,
+        "reason": "native_driver_reported",
+        "error": {}
+      }
+    },
+    "pca_including_upload": {
+      "elapsed": 2.022,
+      "host_rss_bytes": 1563557888,
+      "gpu": {
+        "requested_device": "cuda",
+        "device": "cuda",
+        "backend": "native",
+        "selection_reason": "explicit_cuda",
+        "fallback": false,
+        "available": true,
+        "total_bytes": 42405855232,
+        "free_bytes": 41885433856,
+        "used_bytes": 520421376,
+        "allocated_bytes": 14620984,
+        "allocated_peak_bytes": 1280353060,
+        "reserved_bytes": null,
+        "reserved_peak_bytes": null,
+        "reason": "native_driver_reported",
+        "error": {}
+      }
+    },
+    "neighbors": {
+      "elapsed": 0.097,
+      "host_rss_bytes": 1574060032,
+      "gpu": {
+        "requested_device": "cuda",
+        "device": "cuda",
+        "backend": "native",
+        "selection_reason": "explicit_cuda",
+        "fallback": false,
+        "available": true,
+        "total_bytes": 42405855232,
+        "free_bytes": 41885433856,
+        "used_bytes": 520421376,
+        "allocated_bytes": 14620984,
+        "allocated_peak_bytes": 1280353060,
+        "reserved_bytes": null,
+        "reserved_peak_bytes": null,
+        "reason": "native_driver_reported",
+        "error": {}
+      }
+    }
+  },
+  "host_peak_rss_bytes": 1574277120,
+  "host_rss_before_bytes": 713248768,
+  "gpu_before": {
+    "requested_device": "cuda",
+    "device": "cuda",
+    "backend": "native",
+    "selection_reason": "explicit_cuda",
+    "fallback": false,
+    "available": true,
+    "total_bytes": 42405855232,
+    "free_bytes": 41906405376,
+    "used_bytes": 499449856,
+    "allocated_bytes": 0,
+    "allocated_peak_bytes": 1838976,
+    "reserved_bytes": null,
+    "reserved_peak_bytes": null,
+    "reason": "native_driver_reported",
+    "error": {}
+  },
+  "gpu_peak": {
+    "requested_device": "cuda",
+    "device": "cuda",
+    "backend": "native",
+    "selection_reason": "explicit_cuda",
+    "fallback": false,
+    "available": true,
+    "total_bytes": 42405855232,
+    "free_bytes": 41885433856,
+    "used_bytes": 520421376,
+    "allocated_bytes": 14620984,
+    "allocated_peak_bytes": 1280353060,
+    "reserved_bytes": null,
+    "reserved_peak_bytes": null,
+    "reason": "native_driver_reported",
+    "error": {}
+  },
+  "gpu_after": {
+    "requested_device": "cuda",
+    "device": "cuda",
+    "backend": "native",
+    "selection_reason": "explicit_cuda",
+    "fallback": false,
+    "available": true,
+    "total_bytes": 42405855232,
+    "free_bytes": 41906405376,
+    "used_bytes": 499449856,
+    "allocated_bytes": 0,
+    "allocated_peak_bytes": 1280353060,
+    "reserved_bytes": null,
+    "reserved_peak_bytes": null,
+    "reason": "native_driver_reported",
+    "error": {}
+  },
+  "gpu_observations": [],
+  "provenance": [
+    {
+      "stage": "sparse_materialization",
+      "requested_device": "cpu",
+      "device": "cpu",
+      "backend": "Matrix",
+      "selection_reason": "explicit_cpu",
+      "fallback": false,
+      "output_device": "cpu"
+    },
+    {
+      "stage": "sparse_transfer",
+      "requested_device": "cuda",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "sparse_input_transfer",
+      "fallback": false,
+      "output_device": "cuda"
+    },
+    {
+      "stage": "sparse_to_dense",
+      "requested_device": "cuda",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "device_resident_conversion",
+      "fallback": false,
+      "output_device": "cuda"
+    },
+    {
+      "stage": "preprocessing",
+      "requested_device": "cuda",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "explicit_cuda",
+      "fallback": false,
+      "output_device": "cuda"
+    },
+    {
+      "stage": "decomposition",
+      "requested_device": "cuda",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "explicit_cuda",
+      "fallback": false,
+      "output_device": "cpu"
+    },
+    {
+      "stage": "scores_resident",
+      "requested_device": "cuda",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "device_resident_output",
+      "fallback": false,
+      "output_device": "cuda"
+    },
+    {
+      "stage": "knn_input_materialization",
+      "requested_device": "inherited",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "device_resident_input",
+      "fallback": false,
+      "output_device": "cuda"
+    },
+    {
+      "stage": "knn_distance",
+      "requested_device": "cuda",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "explicit_cuda",
+      "fallback": false,
+      "output_device": "cuda"
+    },
+    {
+      "stage": "knn_neighbor_selection",
+      "requested_device": "cuda",
+      "device": "cuda",
+      "backend": "native",
+      "selection_reason": "explicit_cuda",
+      "fallback": false,
+      "output_device": "cpu"
+    }
+  ],
+  "transfers": {
+    "input_representation": "cudasparse",
+    "host_pca_input_bytes": 13564248,
+    "payload_estimate_bytes": 7446808,
+    "estimate_scope": "Input numeric/CSR payload estimate; not measured driver traffic",
+    "scores_reused": true
+  },
+  "timing_scope": "Synchronized public workflow call; GC and GPU process queries outside timing",
+  "host_memory_scope": "Linux process VmHWM, including R/runtime/input/results; separate fresh process per variant and mode",
+  "shared_gpu": true,
+  "source_report_sha256": "bd50631b8776e2505e319ea9239490cc0258dfe4fbdacba595dcdad36d353c1b",
+  "publication_note": "Public derivative: host label and process identities removed. GPU process observations retain counts and memory totals. Original retained separately."
+}

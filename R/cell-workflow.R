@@ -251,16 +251,32 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
   as.integer(n_components)
 }
 
+.cell_pca_input <- function(normalized, feature_index, features, device) {
+  selected <- normalized[feature_index, , drop = FALSE]
+  # Sparse setup costs outweigh avoiding a sub-MiB dense matrix. Keep the
+  # established path for these small inputs, including its device selection.
+  large_input <- as.double(ncol(normalized)) * length(feature_index) * 8 >= 1024^2
+  selection <- if (large_input) cudaverse::cuda_select_device(device) else NULL
+  if (large_input && identical(selection$device, "cuda") &&
+      identical(selection$backend, "native")) {
+    sparse <- Matrix::t(selected)
+    dimnames(sparse) <- list(colnames(normalized), features)
+    # Keep the host representation sparse. cuda_pca() performs and records
+    # the upload through its existing sparse backend contract.
+    return(cudaverse::cuda_sparse(sparse, device = "cpu"))
+  }
+  dense <- t(as.matrix(selected))
+  dimnames(dense) <- list(colnames(normalized), features)
+  dense
+}
+
 .cell_pca_from_normalized <- function(normalized, variable, n_components,
                                       scale., device) {
   n_components <- .cell_n_components(n_components)
   selected <- variable[variable$selected, , drop = FALSE]
   features <- selected$feature
   feature_index <- selected$index
-  dense <- t(as.matrix(normalized[feature_index, , drop = FALSE]))
-  rownames(dense) <- colnames(normalized)
-  colnames(dense) <- features
-  max_components <- min(nrow(dense) - 1L, ncol(dense))
+  max_components <- min(ncol(normalized) - 1L, length(feature_index))
   if (n_components > max_components) {
     stop(
       sprintf("`n_components` cannot exceed %s for these data.",
@@ -268,8 +284,9 @@ cuda_hvg <- function(counts, n_top = 2000L, min_mean = 0) {
       call. = FALSE
     )
   }
+  input <- .cell_pca_input(normalized, feature_index, features, device)
   fit <- cudaverse::cuda_pca(
-    dense,
+    input,
     n_components = n_components,
     scale. = scale.,
     device = device
