@@ -33,7 +33,7 @@ run <- function() cudacell_workflow(counts, n_hvg = spec$hvg,
   scale. = TRUE, device = "cuda")
 plain <- function(x) { attr(x, "cudaverse_native_state") <- NULL; x }
 observations <- list(); timings <- numeric(); stages <- list()
-before <- cudaverse::cuda_memory_info("cuda")
+before <- unclass(cudaverse::cuda_memory_info("cuda"))
 rss_before <- rss("VmRSS")
 if (mode == "timing") {
   for (i in seq_len(5L)) { invisible(run()); gc(); sync() }
@@ -50,7 +50,7 @@ if (mode == "timing") {
         sdev = result$pca$sdev, center = result$pca$center, scale = result$pca$scale,
         features = result$pca$features, index = result$neighbors$index,
         distance = result$neighbors$distance), paste0(out, ".result.rds"), compress = FALSE)
-      provenance <- cudaverse::cuda_provenance(result)
+      provenance <- as.data.frame(cudaverse::cuda_provenance(result))
     }
     result <- NULL
   }
@@ -58,7 +58,7 @@ if (mode == "timing") {
   measure <- function(name, expr) {
     sync(); t <- proc.time()[[3]]; value <- force(expr); sync()
     stages[[name]] <<- list(elapsed = proc.time()[[3]] - t, host_rss_bytes = rss("VmRSS"),
-                           gpu = cudaverse::cuda_memory_info("cuda"))
+                           gpu = unclass(cudaverse::cuda_memory_info("cuda")))
     value
   }
   normalized <- measure("normalization", cuda_normalize_counts(counts))
@@ -74,7 +74,7 @@ if (mode == "timing") {
     n_components = spec$components, scale. = TRUE, device = "cuda"))
   neighbors <- measure("neighbors", cuda_cell_neighbors(fit,
     k = spec$k, batch_size = spec$batch_size, device = "cuda"))
-  provenance <- cudaverse::cuda_provenance(neighbors)
+  provenance <- as.data.frame(cudaverse::cuda_provenance(neighbors))
   transfer <- list(input_representation = class(input)[1],
     host_pca_input_bytes = as.numeric(object.size(input)),
     payload_estimate_bytes = if (variant == "candidate")
@@ -83,11 +83,11 @@ if (mode == "timing") {
     estimate_scope = "Input numeric/CSR payload estimate; not measured driver traffic",
     scores_reused = any(grepl("scores_resident", provenance$stage)))
 } else stop("Unknown mode")
-peak <- cudaverse::cuda_memory_info("cuda")
+peak <- unclass(cudaverse::cuda_memory_info("cuda"))
 host_peak <- rss()
 rm(list = intersect(c("result", "normalized", "variable", "selected", "input", "fit", "neighbors"), ls()))
 gc(); sync()
-after <- cudaverse::cuda_memory_info("cuda")
+after <- unclass(cudaverse::cuda_memory_info("cuda"))
 write_json(list(schema = "cudacellr-performance/1", complete = TRUE, case = spec,
   variant = variant, mode = mode, r_version = R.version.string,
   package_version = as.character(packageVersion("cudacellr")), core_version = "0.4.2",
