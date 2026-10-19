@@ -12,7 +12,7 @@ stopifnot(!any(grepl("(^/|(^|/)\\.\\.(/|$))", files)))
 untar(archive, exdir = root)
 cases <- list()
 emit <- function(id, x, hvg, components, seed = NA_integer_) {
-  x <- as(x, "dgCMatrix")
+  x <- as(x, "CsparseMatrix")
   path <- file.path(root, paste0(id, ".rds"))
   saveRDS(x, path, compress = FALSE)
   cases[[length(cases) + 1L]] <<- list(
