@@ -11,3 +11,5 @@
 
 - [Backend provenance and CUDA
   diagnostics](https://cudaverse.github.io/cudacellr/articles/backend-provenance.md):
+- [Single-cell performance and
+  memory](https://cudaverse.github.io/cudacellr/articles/performance-memory.md):

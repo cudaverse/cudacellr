@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cudacellr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -249,10 +249,18 @@ not itself mean the calculation fell back to CPU.</p>
 <td>
 <code>normalization</code>, <code>hvg</code>
 </td>
-<td>CPU sparse preprocessing; selected features are materialized as a
-dense input matrix.</td>
+<td>CPU sparse preprocessing; selected features remain sparse for native
+CUDA upload.</td>
 </tr>
 <tr class="even">
+<td><code><a href="../reference/cuda_cell_pca.html">cuda_cell_pca()</a></code></td>
+<td>
+<code>pca_sparse_transfer</code>,
+<code>pca_sparse_to_dense</code>
+</td>
+<td>Sparse input uploads to CUDA and becomes dense on the device.</td>
+</tr>
+<tr class="odd">
 <td><code><a href="../reference/cuda_cell_pca.html">cuda_cell_pca()</a></code></td>
 <td>
 <code>pca_preprocessing</code>, <code>pca_decomposition</code>
@@ -260,18 +268,18 @@ dense input matrix.</td>
 <td>CUDA centring/scaling and decomposition with <code>native</code>;
 the public PCA model is returned to R.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code><a href="../reference/cuda_cell_pca.html">cuda_cell_pca()</a></code></td>
 <td><code>pca_scores_resident</code></td>
 <td>A retained CUDA score cache supports subsequent native
 operations.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code><a href="../reference/cuda_cell_neighbors.html">cuda_cell_neighbors()</a></code></td>
 <td>inherited source stages</td>
 <td>Preserves PCA or other input provenance.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code><a href="../reference/cuda_cell_neighbors.html">cuda_cell_neighbors()</a></code></td>
 <td>
 <code>knn_distance</code>, <code>knn_neighbor_selection</code>
@@ -279,7 +287,7 @@ operations.</td>
 <td>CUDA distance blocks and deterministic top-k with
 <code>native</code>; final neighbour matrices are returned to R.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code><a href="../reference/cudacell_workflow.html">cudacell_workflow()</a></code></td>
 <td>all stages above</td>
 <td>Hybrid CPU preprocessing and CUDA PCA/kNN.</td>
@@ -327,14 +335,17 @@ missing runtime libraries from a failed device self-test.</p>
 <h2 id="plan-memory-and-workload-size">Plan memory and workload size<a class="anchor" aria-label="anchor" href="#plan-memory-and-workload-size"></a>
 </h2>
 <p>Normalization and HVG calculations retain sparse <code>Matrix</code>
-storage. <code><a href="../reference/cuda_cell_pca.html">cuda_cell_pca()</a></code> then selects <code>n_hvg</code>
-rows and materializes a dense cell-by-feature matrix. One
-double-precision copy of this selected matrix uses roughly
-<code>8 * cells * n_hvg</code> bytes; centring, scaling, decomposition,
-and host/device copies require additional memory. Lower
-<code>n_hvg</code> when dense input memory is the constraint: the input
-is allocated before decomposition, so reducing <code>n_components</code>
-alone does not make that matrix smaller.</p>
+storage. In the development version, native CUDA PCA also keeps the
+selected <code>n_hvg</code> rows sparse through upload; the dense
+cell-by-feature input is created on the GPU. Inputs smaller than 1 MiB
+retain the existing dense path to avoid sparse setup overhead. CPU and
+torch paths still prepare dense host input. One double-precision dense
+copy uses roughly <code>8 * cells * n_hvg</code> bytes; centring,
+scaling and decomposition require additional workspace. Lower
+<code>n_hvg</code> when dense GPU working memory is the constraint:
+reducing <code>n_components</code> alone does not make that input
+smaller. Sparse preparation reduces host input storage without turning
+the decomposition into an out-of-core algorithm.</p>
 <p>The PCA model retains host scores/loadings and, for native CUDA,
 cached device scores. Remove unused models and call <code><a href="https://rdrr.io/r/base/gc.html" class="external-link">gc()</a></code> to
 allow their storage to be released.

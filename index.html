@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">cudacellr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -149,8 +149,8 @@
 </tr>
 <tr>
 <td><code><a href="reference/cuda_cell_pca.html">cuda_cell_pca()</a></code></td>
-<td>PCA centring/scaling and decomposition</td>
-<td>normalization, HVG selection, selected dense input, and the public PCA model</td>
+<td>sparse-to-dense conversion, PCA centring/scaling and decomposition</td>
+<td>normalization, HVG selection, selected sparse input, and the public PCA model</td>
 </tr>
 <tr>
 <td><code><a href="reference/cuda_cell_neighbors.html">cuda_cell_neighbors()</a></code></td>
@@ -165,6 +165,8 @@
 </tbody>
 </table>
 <p>The complete workflow is <code>hybrid</code> because normalization and HVG selection are CPU stages. Native PCA returns ordinary R scores and loadings and also retains a device-side score cache; passing the PCA result directly to <code><a href="reference/cuda_cell_neighbors.html">cuda_cell_neighbors()</a></code> lets kNN reuse that cache without uploading the scores again. CUDA neighbour selection is not a fixed CPU stage.</p>
+<p>The development version prepares selected features as a sparse matrix for native CUDA PCA when dense input would occupy at least 1 MiB, avoiding dense host input copies. Smaller inputs retain the existing dense path. Dense float64 working storage is still required on the GPU: one selected matrix uses approximately <code>8 * cells * n_hvg</code> bytes before additional PCA workspace. CPU and torch preparation retain their existing dense host inputs.</p>
+<p>On the recorded A100 validation run, this reduced peak host memory by 80.9% for a 50,000-cell sparse fixture and 25.1% for the public 11,769-cell PBMC dataset, while passing the numerical and runtime gates. See the <a href="https://cudaverse.github.io/cudacellr/articles/performance-memory.html">performance and memory guide</a> and <a href="benchmarks/sparse-pca-2026-10-19/README.html">reproducible evidence</a> for parameters, measured limits, transfer traces and shared-machine qualifications.</p>
 <p>The optional torch compatibility backend can have different stage boundaries. Check provenance for the backend actually selected rather than inferring it from the requested device.</p>
 <p>Inspect the runtime and any result without guessing from its function name:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">

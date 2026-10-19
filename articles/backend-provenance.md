@@ -147,7 +147,8 @@ These semantics describe the native backend in `cudaverse` 0.4.1:
 |----|----|----|
 | [`cuda_normalize_counts()`](https://cudaverse.github.io/cudacellr/reference/cuda_normalize_counts.md) | `normalization` | CPU `Matrix` sparse operations. |
 | [`cuda_hvg()`](https://cudaverse.github.io/cudacellr/reference/cuda_hvg.md) | `hvg` | CPU `Matrix` feature statistics and base-R ranking. |
-| [`cuda_cell_pca()`](https://cudaverse.github.io/cudacellr/reference/cuda_cell_pca.md) | `normalization`, `hvg` | CPU sparse preprocessing; selected features are materialized as a dense input matrix. |
+| [`cuda_cell_pca()`](https://cudaverse.github.io/cudacellr/reference/cuda_cell_pca.md) | `normalization`, `hvg` | CPU sparse preprocessing; selected features remain sparse for native CUDA upload. |
+| [`cuda_cell_pca()`](https://cudaverse.github.io/cudacellr/reference/cuda_cell_pca.md) | `pca_sparse_transfer`, `pca_sparse_to_dense` | Sparse input uploads to CUDA and becomes dense on the device. |
 | [`cuda_cell_pca()`](https://cudaverse.github.io/cudacellr/reference/cuda_cell_pca.md) | `pca_preprocessing`, `pca_decomposition` | CUDA centring/scaling and decomposition with `native`; the public PCA model is returned to R. |
 | [`cuda_cell_pca()`](https://cudaverse.github.io/cudacellr/reference/cuda_cell_pca.md) | `pca_scores_resident` | A retained CUDA score cache supports subsequent native operations. |
 | [`cuda_cell_neighbors()`](https://cudaverse.github.io/cudacellr/reference/cuda_cell_neighbors.md) | inherited source stages | Preserves PCA or other input provenance. |
@@ -186,15 +187,17 @@ runtime libraries from a failed device self-test.
 
 ## Plan memory and workload size
 
-Normalization and HVG calculations retain sparse `Matrix` storage.
-[`cuda_cell_pca()`](https://cudaverse.github.io/cudacellr/reference/cuda_cell_pca.md)
-then selects `n_hvg` rows and materializes a dense cell-by-feature
-matrix. One double-precision copy of this selected matrix uses roughly
-`8 * cells * n_hvg` bytes; centring, scaling, decomposition, and
-host/device copies require additional memory. Lower `n_hvg` when dense
-input memory is the constraint: the input is allocated before
-decomposition, so reducing `n_components` alone does not make that
-matrix smaller.
+Normalization and HVG calculations retain sparse `Matrix` storage. In
+the development version, native CUDA PCA also keeps the selected `n_hvg`
+rows sparse through upload; the dense cell-by-feature input is created
+on the GPU. Inputs smaller than 1 MiB retain the existing dense path to
+avoid sparse setup overhead. CPU and torch paths still prepare dense
+host input. One double-precision dense copy uses roughly
+`8 * cells * n_hvg` bytes; centring, scaling and decomposition require
+additional workspace. Lower `n_hvg` when dense GPU working memory is the
+constraint: reducing `n_components` alone does not make that input
+smaller. Sparse preparation reduces host input storage without turning
+the decomposition into an out-of-core algorithm.
 
 The PCA model retains host scores/loadings and, for native CUDA, cached
 device scores. Remove unused models and call
