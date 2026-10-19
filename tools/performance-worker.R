@@ -80,7 +80,8 @@ if (mode == "timing") {
     payload_estimate_bytes = if (inherits(input, "cudasparse"))
       length(input$values) * 8 + length(input$col_index) * 4 + length(input$row_ptr) * 4 else
       length(input) * 8,
-    estimate_scope = "Input numeric/CSR payload estimate; not measured driver traffic",
+    estimate_scope = paste("Host numeric/CSR payload estimate; excludes the native COO row-index",
+                           "copy, capability probes and returned results; not driver traffic"),
     scores_reused = any(grepl("scores_resident", provenance$stage)))
 } else stop("Unknown mode")
 peak <- unclass(cudaverse::cuda_memory_info("cuda"))

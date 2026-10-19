@@ -116,10 +116,17 @@ again. CUDA neighbour selection is not a fixed CPU stage.
 
 The development version prepares selected features as a sparse matrix for
 native CUDA PCA when dense input would occupy at least 1 MiB, avoiding dense
-host input copies. Smaller inputs retain the existing dense path. Dense float64 working
-storage is still required on the GPU: one selected matrix uses approximately
+host input copies. Smaller inputs retain the existing dense path. Dense float64
+working storage is still required on the GPU: one selected matrix uses approximately
 `8 * cells * n_hvg` bytes before additional PCA workspace. CPU and torch
 preparation retain their existing dense host inputs.
+
+On the recorded A100 validation run, this reduced peak host memory by 80.9%
+for a 50,000-cell sparse fixture and 25.1% for the public 11,769-cell PBMC
+dataset, while passing the numerical and runtime gates. See the
+[performance and memory guide](https://cudaverse.github.io/cudacellr/articles/performance-memory.html)
+and [reproducible evidence](benchmarks/sparse-pca-2026-10-19/README.md) for
+parameters, measured limits, transfer traces and shared-machine qualifications.
 
 The optional torch compatibility backend can have different stage boundaries.
 Check provenance for the backend actually selected rather than inferring it

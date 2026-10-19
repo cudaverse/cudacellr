@@ -11,6 +11,7 @@ articles:
 - title: Backend and provenance
   contents:
   - backend-provenance
+  - performance-memory
 
 reference:
 - title: Preprocess counts

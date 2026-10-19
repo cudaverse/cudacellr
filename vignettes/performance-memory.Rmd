@@ -1,0 +1,149 @@
+---
+title: "Single-cell performance and memory"
+author: "Yaoxiang Li"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Single-cell performance and memory}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## What changed
+
+The development version keeps selected features sparse while preparing native
+CUDA PCA. It transposes the sparse matrix and uses cudaverse's existing sparse
+PCA interface. The dense PCA input is created on the GPU. Inputs whose dense
+representation is smaller than 1 MiB retain the existing dense host path to
+avoid sparse setup overhead. CPU and torch execution also retain dense host
+preparation.
+
+PCA and sparse arithmetic remain float64. Function arguments, result objects,
+feature ordering, cell identifiers, duplicate-name handling, exact neighbours
+and explicit TF32 policy are unchanged. GPU PCA still needs dense workspace;
+this is not an out-of-core decomposition.
+
+## Measured workflows
+
+The October 19, 2026 comparison used one NVIDIA A100-SXM4-40GB host, Linux,
+R 4.3.3, cudaverse 0.4.2, native CUDA, and `OMP_NUM_THREADS=2` /
+`OPENBLAS_NUM_THREADS=2`. The host exposed 32 virtual CPUs on AMD EPYC 7713;
+R used the system reference BLAS/LAPACK. The baseline
+was the unchanged submitted cudacellr 0.4.0 archive; the candidate runtime was
+commit `b1b2262`. Each workflow had five warmups and ten synchronized timed
+runs in fresh processes for each variant. All cases used `k = 15`,
+`batch_size = 256`, and scaled PCA.
+
+| Input | Cells | Genes | Selected genes / PCs | Median seconds, baseline → candidate | Peak host GiB, baseline → candidate |
+|---|---:|---:|---:|---:|---:|
+| Historical small synthetic | 1,000 | 50 | 40 / 30 | 0.032 → 0.030 | 0.429 → 0.427 |
+| Historical medium synthetic | 10,000 | 100 | 80 / 30 | 0.176 → 0.166 | 0.459 → 0.456 |
+| Historical large synthetic | 50,000 | 128 | 102 / 30 | 1.394 → 1.164 | 0.698 → 0.611 |
+| Sparse stress fixture | 50,000 | 10,000 | 2,000 / 50 | 9.435 → 3.367 | 3.473 → 0.663 |
+| 10x PBMC v3 | 11,769 | 33,538 | 2,000 / 50 | 5.465 → 4.567 | 2.096 → 1.570 |
+
+The sparse stress fixture has 2,549,762 nonzeros; PBMC has 24,825,783.
+PBMC comes from 10x Genomics,
+[10k PBMCs from a Healthy Donor (v3 chemistry)](https://www.10xgenomics.com/datasets/10-k-pbm-cs-from-a-healthy-donor-v-3-chemistry-3-standard-3-0-0),
+licensed CC BY 4.0. The input manifest pins the download and derived inputs by
+SHA-256 and records synthetic seeds and all workflow parameters.
+
+The host was available for shared use, without an exclusive GPU reservation.
+The 200 before/after compute-process observations in the accepted comparison
+reported no other compute process. These observations do not rule out activity
+between samples or other host contention. The table reports this run's
+observations; it does not promise the same speedup on other hardware.
+
+Peak host memory is the whole R process high-water mark, including runtime,
+input and returned results. Timings include the public workflow and a final
+CUDA synchronization, with garbage collection, serialization and diagnostic
+queries outside the timed call. The initial all-sparse candidate failed the
+small-input runtime gate; its evidence is retained. The 1 MiB dispatch threshold
+resolved that regression. The unchanged baseline measurements were reused for
+the final candidate on the same host, R/core versions and pinned inputs.
+
+All five cases passed exact normalization, HVG, identifier and neighbour-index
+comparisons, PCA reconstruction/subspace tolerances, distance tolerances and
+native allocation cleanup. The large sparse fixture exceeded the required
+25% host-memory reduction (80.9%), and every case passed the maximum 10%
+end-to-end slowdown gate. PBMC host memory fell 25.1%.
+
+## Where the time goes
+
+Separate single-pass stage profiles locate work; they are not warmed medians
+and should not be added to the warmed workflow timings above.
+
+| Candidate stage, seconds | Sparse stress fixture | PBMC |
+|---|---:|---:|
+| Normalization | 0.473 | 1.811 |
+| Variable-feature selection | 0.071 | 0.785 |
+| PCA preparation | 0.069 | 0.207 |
+| PCA including upload | 2.527 | 2.022 |
+| Exact neighbours | 0.856 | 0.097 |
+
+The next profiling target is dense PCA workspace and decomposition for the
+large sparse case. For PBMC, CPU normalization and feature selection together
+also merit attention. These observations do not justify changing numerical
+algorithms or precision without a separate correctness study.
+
+## Transfers and GPU memory
+
+Separate Nsight Systems 2022.4.2 traces measured CUDA memory operations over
+the complete profile process, including capability probes and result copies.
+Profiler runs are excluded from the timing gate. MB below means 1,000,000 bytes.
+
+| Trace | Host → GPU MB, baseline → candidate | GPU → host MB, both | GPU → GPU MB, both |
+|---|---:|---:|---:|
+| Sparse stress fixture | 800.016 → 8.176 | 29.865 | 800.000 |
+| PBMC | 188.320 → 9.930 | 7.691 | 188.304 |
+
+The additional native sparse row-index upload is included in these traces.
+The benchmark JSON's smaller CSR payload estimate excludes that extra copy
+and is not a measured transfer total. Native PCA retains GPU scores, and kNN
+provenance confirms reuse of those scores without another upload.
+
+Peak allocations tracked by cudaverse were 4.646 GiB for the candidate sparse
+stress workflow and 1.192 GiB for PBMC. The corresponding baseline peaks were
+4.638 and 1.183 GiB: reducing host memory does not reduce dense PCA's GPU
+workspace. These are package-owned allocation peaks, excluding CUDA context,
+library-internal allocations and other applications. Allow additional headroom.
+
+## Sizing and batch guidance
+
+The table defines tested configurations, not maximum supported sizes. In
+particular, 50,000 cells with 2,000 selected genes was validated at about 0.5%
+input density; a denser 50,000-cell matrix can need substantially more host
+memory. The full sparse input and normalized output still reside in host memory.
+
+One float64 selected dense matrix needs approximately
+`8 * cells * n_hvg` bytes, before decomposition workspace. At 50,000 cells and
+2,000 selected genes that is 0.745 GiB per copy. Lower `n_hvg` when dense GPU
+memory is the constraint. Reducing `n_components` alone does not shrink that
+input matrix.
+
+Exact kNN's distance block needs about
+`8 * min(batch_size, cells) * cells` bytes, plus scores, outputs and workspace.
+For 50,000 cells, batch sizes 128, 256 and 512 imply approximately 48.8, 97.7
+and 195.3 MiB for that block. Start with the measured value of 256; reduce it
+to 128 if available memory is tight. The smaller batch's throughput is not
+measured here. Batch size preserves exact neighbour definitions and original
+row-index tie breaking. It does not change quadratic search time or PCA memory.
+
+Remove unused results and call `gc()` before checking available memory with
+`cudaverse::cuda_memory_info("cuda")`. Keep GPU scores with their PCA model
+when continuing directly into `cuda_cell_neighbors()`.
+
+## Reproduce and inspect
+
+The repository's
+[benchmark evidence](https://github.com/cudaverse/cudacellr/tree/main/benchmarks/sparse-pca-2026-10-19)
+contains the input manifest, all timing samples, stage profiles, numerical
+gate results and transfer summaries. Maintainer scripts under `tools/` describe
+the protocol and preserve failed attempts. Public derivatives remove unrelated
+process identities; original reports, result matrices and raw CUDA traces are
+retained with their hashes in the publication/development evidence.
+
+Ordinary package tests exercise CPU execution, unavailable-CUDA errors and the
+SeuratObject/SingleCellExperiment adapters. Separate native CUDA regressions
+cover sparse preparation, duplicate identifiers, deterministic ties, PCA
+reconstruction and device-resident score reuse. A skipped CUDA test in a
+CPU-only package check does not replace this hardware validation.
