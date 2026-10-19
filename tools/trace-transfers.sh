@@ -2,6 +2,7 @@
 set -euo pipefail
 root="${1:?benchmark root}"
 output="${2:?new trace directory}"
+reuse="${3:-}"
 [[ ! -e "$output" ]] || { echo 'Refusing to overwrite evidence'; exit 1; }
 mkdir -p "$output"
 trap 'echo $? > "$output/exit-status.txt"' EXIT
@@ -23,9 +24,20 @@ for case in sparse_50000 pbmc_10k_v3; do
     fi
     name="$output/$case-$variant"
     echo "$case $variant" > "$output/stage.txt"
-    nsys profile --trace=cuda --sample=none --cpuctxsw=none --force-overwrite=false \
-      --output="$name" Rscript --vanilla tools/performance-worker.R \
-      "$root/data" "$case" "$variant" profile "$name.json" > "$name.log" 2>&1
+    if [[ -n "$reuse" && -f "$reuse/$case-$variant.qdstrm" ]]; then
+      for suffix in qdstrm json log; do cp "$reuse/$case-$variant.$suffix" "$name.$suffix"; done
+      sha256sum "$reuse/$case-$variant.qdstrm" >> "$output/reused-traces.sha256"
+    else
+      nsys profile --trace=cuda --sample=none --cpuctxsw=none --force-overwrite=false \
+        --output="$name" Rscript --vanilla tools/performance-worker.R \
+        "$root/data" "$case" "$variant" profile "$name.json" > "$name.log" 2>&1
+    fi
+    if [[ ! -f "$name.nsys-rep" ]]; then
+      # Debian separates the target and host tools; nsys may miss the importer.
+      importer="${NSYS_IMPORTER:-/usr/lib/nsight-systems/host-linux-x64/QdstrmImporter}"
+      "$importer" --version > "$name-importer-version.txt"
+      "$importer" -i "$name.qdstrm" -o "$name.nsys-rep" > "$name-import.log" 2>&1
+    fi
     nsys stats --report gpumemsizesum,gpumemtimesum,cudaapisum,gpukernsum \
       --format csv "$name.nsys-rep" > "$name-stats.csv" 2> "$name-stats.log"
   done

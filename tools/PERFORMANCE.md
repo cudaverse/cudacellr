@@ -49,3 +49,7 @@ the complete profile process, including capability probes and result copies;
 they are additional diagnostics, excluded from the elapsed-time gate. The
 report names in the script target Nsight Systems 2022.4.2. Run it after timed
 measurements finish, so profiler overhead cannot affect those measurements.
+For split Debian installations, `NSYS_IMPORTER` can identify the matching
+`QdstrmImporter` if automatic conversion fails. An optional third argument
+reuses retained `.qdstrm`/JSON/log files from an interrupted trace directory;
+their hashes are recorded in the fresh output directory.
